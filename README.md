@@ -22,6 +22,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+**Live**: [lyriclean.vercel.app](https://lyriclean.vercel.app)
+
 ## Deploy
 
 **Vercel** (recommended — free):
