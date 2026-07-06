@@ -34,13 +34,7 @@ function normalizeSectionLabel(trimmed: string): string {
 
 function isFillerLine(trimmed: string): boolean {
   const lower = trimmed.toLowerCase();
-  if (/^\(?\s*x\d+\s*\)?$/.test(trimmed)) return true;
-  if (/^\(?\s*(?:repeat|refrain)\s*\)?$/.test(lower)) return true;
-  if (/^\(?\s*instrumental\s*\)?$/.test(lower)) return true;
-  if (/^\(?\s*interlude\s*\)?$/.test(lower)) return true;
-  if (/^\d+\s*x\s*$/.test(trimmed)) return true;
-  if (/^\[?(?:x\d+|repeat|refrain|instrumental|interlude)\]?$/.test(lower)) return true;
-  if (/^2x$/.test(trimmed)) return true;
+  if (/^[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumental|interlude)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?$/.test(lower)) return true;
   if (removeEmoji(trimmed) === "" && trimmed.length > 0) return true;
   return false;
 }
@@ -80,9 +74,10 @@ export function cleanLyrics(raw: string): CleanResult {
       continue;
     }
 
-    trimmed = trimmed.replace(/\s*\(?\s*x\d+\s*\)?\s*$/i, "");
-    trimmed = trimmed.replace(/\s*\[x\d+\]\s*$/i, "");
-    trimmed = trimmed.replace(/\s*\((?:Repeat|Refrain)\)\s*$/i, "");
+    trimmed = trimmed.replace(
+      /\s*[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumental)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?\s*$/i,
+      "",
+    );
 
     trimmed = trimmed.replace(/^\s*\d+[.)]\s*/, "");
     trimmed = trimmed.replace(/^\s*[-•·‣⁃]\s*/, "");
