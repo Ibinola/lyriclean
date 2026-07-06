@@ -18,6 +18,9 @@ interface ControlPanelProps {
   slides: number;
   showSlides: boolean;
   hasOutput: boolean;
+  showSearch: boolean;
+  onShowSearchChange: (val: boolean) => void;
+  findInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 export default function ControlPanel({
@@ -32,10 +35,12 @@ export default function ControlPanel({
   slides,
   showSlides,
   hasOutput,
+  showSearch,
+  onShowSearchChange,
+  findInputRef,
 }: ControlPanelProps) {
   const [findText, setFindText] = useState("");
   const [replaceText, setReplaceText] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -52,17 +57,17 @@ export default function ControlPanel({
   return (
     <div className="space-y-3">
       {/* Lines per slide */}
-      <div className="flex items-center gap-3 rounded-xl border bg-white px-4 py-2.5 text-sm flex-wrap">
+      <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm flex-wrap">
         <Label
           htmlFor="linesPerBreak"
-          className="text-xs font-semibold uppercase tracking-wide text-stone-500"
+          className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
         >
           Lines per slide:
         </Label>
         <div className="flex items-center">
           <button
             onClick={() => onLinesPerBreakChange(Math.max(0, linesPerBreak - 1))}
-            className="rounded-l-lg border px-2.5 py-1.5 text-sm text-stone-600 transition-colors hover:bg-stone-100"
+            className="rounded-l-lg border px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted"
           >
             &minus;
           </button>
@@ -75,16 +80,16 @@ export default function ControlPanel({
             onChange={(e) =>
               onLinesPerBreakChange(Math.min(10, Math.max(0, parseInt(e.target.value) || 0)))
             }
-            className="w-11 border-y py-1.5 text-center text-sm outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="w-11 border-y py-1.5 text-center text-sm text-foreground outline-none bg-transparent [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
           <button
             onClick={() => onLinesPerBreakChange(Math.min(10, linesPerBreak + 1))}
-            className="rounded-r-lg border px-2.5 py-1.5 text-sm text-stone-600 transition-colors hover:bg-stone-100"
+            className="rounded-r-lg border px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted"
           >
             +
           </button>
         </div>
-        <span className="text-xs text-stone-400">
+        <span className="text-xs text-muted-foreground">
           {linesPerBreak === 0 ? "0 = no splitting" : `${linesPerBreak} lines per slide`}
         </span>
       </div>
@@ -103,7 +108,7 @@ export default function ControlPanel({
           {copied ? "\u2713 Copied!" : "\u{1F4CB} Copy to Clipboard"}
         </Button>
         <Button
-          onClick={() => setShowSearch(!showSearch)}
+          onClick={() => onShowSearchChange(!showSearch)}
           variant="secondary"
         >
           &#128270; Search &amp; Replace
@@ -112,14 +117,14 @@ export default function ControlPanel({
 
       {/* Search & Replace */}
       {showSearch && (
-        <div className="rounded-xl border bg-white px-4 py-3">
+        <div className="rounded-xl border bg-card px-4 py-3">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
               &#128270; Search &amp; Replace
             </h3>
             <button
-              onClick={() => setShowSearch(false)}
-              className="text-xs text-stone-400 transition-colors hover:text-stone-600"
+              onClick={() => onShowSearchChange(false)}
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               Hide &#10005;
             </button>
@@ -128,11 +133,12 @@ export default function ControlPanel({
             <div className="flex-1 space-y-1">
               <Label
                 htmlFor="findText"
-                className="text-xs font-semibold uppercase text-stone-500"
+                className="text-xs font-semibold uppercase text-muted-foreground"
               >
                 Find
               </Label>
               <Input
+                ref={findInputRef}
                 id="findText"
                 value={findText}
                 onChange={(e) => setFindText(e.target.value)}
@@ -149,7 +155,7 @@ export default function ControlPanel({
             <div className="flex-1 space-y-1">
               <Label
                 htmlFor="replaceText"
-                className="text-xs font-semibold uppercase text-stone-500"
+                className="text-xs font-semibold uppercase text-muted-foreground"
               >
                 Replace with
               </Label>
@@ -176,21 +182,21 @@ export default function ControlPanel({
       <Separator />
 
       {/* Stats */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-stone-500">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-muted-foreground">
         <span>
-          <span className="font-semibold text-stone-900">{rawLines}</span> raw
+          <span className="font-semibold text-foreground">{rawLines}</span> raw
         </span>
         <span>
-          &#8594; <span className="font-semibold text-stone-900">{cleanedLines}</span> cleaned
+          &#8594; <span className="font-semibold text-foreground">{cleanedLines}</span> cleaned
         </span>
         <span>
           <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
-          <span className="font-semibold text-stone-900">{sections}</span> sections
+          <span className="font-semibold text-foreground">{sections}</span> sections
         </span>
         {showSlides && (
           <span>
             <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
-            <span className="font-semibold text-stone-900">{slides}</span> slides
+            <span className="font-semibold text-foreground">{slides}</span> slides
           </span>
         )}
       </div>

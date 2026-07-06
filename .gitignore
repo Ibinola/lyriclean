@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# product requirements
+/PRD.md
+
 # vercel
 .vercel
 
