@@ -2,7 +2,7 @@
 
 **Clean lyrics. Clear worship. Open source.**
 
-Paste raw WhatsApp lyrics → get a clean, structured version ready for EasyWorship and other projection software. Strips fillers (`x2`, `(Repeat)`, `(Refrain)`, emoji, numbering), normalizes section headers, and splits lyrics into slides.
+Paste raw lyrics → get a clean, structured version ready for EasyWorship and other projection software. Strips fillers (`x2`, `(Repeat)`, `(Refrain)`, emoji, numbering), normalizes section headers, and splits lyrics into slides.
 
 Built for church media teams who get song lyrics late and need them projection-ready in seconds.
 
