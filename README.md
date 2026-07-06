@@ -35,7 +35,7 @@ Or connect your GitHub repo at [vercel.com/new](https://vercel.com/new) — it d
 
 ## Features
 
-- **Paste & Clean** — WhatsApp lyrics → cleaned output
+- **Paste & Clean** — raw lyrics → cleaned output
 - **Filler Removal** — strips `x2`, `(Repeat)`, `(Refrain)`, emoji, numbering, bullets
 - **Section Detection** — normalizes `Verse 1:`, `[Chorus]`, `Refrain:` into clean headers
 - **Lines per Slide** — splits lyrics into groups for EasyWorship slide breaks
