@@ -56,6 +56,7 @@ export default function LyricEditor({
         </div>
         <div className="relative flex-1 min-h-0">
           <textarea
+            id="input-area"
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
             placeholder="Paste raw lyrics here..."
@@ -65,7 +66,7 @@ export default function LyricEditor({
         </div>
       </Card>
 
-      <Card className="flex flex-col overflow-hidden">
+      <Card id="output-panel" className="flex flex-col overflow-hidden">
         <div className="flex items-center justify-between border-b bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <span>Cleaned Lyrics</span>
           <span className="flex items-center gap-1.5 text-[10px] font-normal normal-case text-muted-foreground">

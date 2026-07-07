@@ -61,7 +61,7 @@ export default function ControlPanel({
   return (
     <div className="space-y-3">
       {/* Lines per slide */}
-      <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm flex-wrap">
+      <div id="lines-control" className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm flex-wrap">
         <Label
           htmlFor="linesPerBreak"
           className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
@@ -100,7 +100,7 @@ export default function ControlPanel({
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-2">
-        <Button onClick={onClean} className="bg-indigo-600 hover:bg-indigo-700">
+        <Button id="clean-btn" onClick={onClean} className="bg-indigo-600 hover:bg-indigo-700">
           &#10003; Clean Lyrics
         </Button>
         <Button
@@ -119,6 +119,7 @@ export default function ControlPanel({
         </Button>
         <div className="relative" ref={exportRef}>
           <Button
+            id="export-btn"
             onClick={() => setShowExport(!showExport)}
             disabled={!hasOutput}
             variant="secondary"

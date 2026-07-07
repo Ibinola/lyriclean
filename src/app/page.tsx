@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import LyricEditor from "@/components/LyricEditor";
 import ControlPanel from "@/components/ControlPanel";
+import OnboardingTour from "@/components/OnboardingTour";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
 import {
   exportEasyWorship,
@@ -168,6 +169,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
+      <OnboardingTour />
 
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 overflow-hidden px-4 py-5 sm:px-6">
         <LyricEditor
