@@ -44,6 +44,18 @@ const steps: Step[] = [
   },
 ];
 
+function useIsMobile() {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    setMobile(mq.matches);
+    const cb = (e: MediaQueryListEvent) => setMobile(e.matches);
+    mq.addEventListener("change", cb);
+    return () => mq.removeEventListener("change", cb);
+  }, []);
+  return mobile;
+}
+
 function getArrowStyle(placement: string) {
   const base = "absolute h-2 w-2 rotate-45 bg-card border-l border-t";
   switch (placement) {
@@ -85,6 +97,7 @@ export default function OnboardingTour() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const done = localStorage.getItem(LS_KEY);
@@ -93,7 +106,6 @@ export default function OnboardingTour() {
 
   useEffect(() => {
     if (!open) return;
-
     const s = steps[step];
     const el = document.querySelector(s.target);
     if (el) {
@@ -110,11 +122,65 @@ export default function OnboardingTour() {
 
   const s = steps[step];
   const el = document.querySelector(s.target);
+
+  // On mobile, render a centered modal instead of a positioned tooltip
+  if (isMobile) {
+    return (
+      <>
+        <div className="fixed inset-0 z-40 bg-black/30" onClick={finish} />
+        <div className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-32px)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-card shadow-2xl">
+          <div className="flex gap-1.5 px-5 pt-4">
+            {steps.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1 flex-1 rounded-full transition-colors ${
+                  i === step ? "bg-indigo-600" : "bg-muted-foreground/20"
+                }`}
+              />
+            ))}
+          </div>
+          <div className="px-5 pb-4 pt-3">
+            <h3 className="mb-1 text-[15px] font-semibold">{s.title}</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {s.body}
+            </p>
+          </div>
+          <div className="flex items-center justify-between border-t px-5 py-3">
+            <button
+              onClick={finish}
+              className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+            >
+              Skip tour
+            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setStep(step - 1)}
+                className={`rounded-lg border px-3 py-1.5 text-xs transition-colors hover:bg-muted ${
+                  step === 0 ? "invisible" : ""
+                }`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={() =>
+                  step < steps.length - 1 ? setStep(step + 1) : finish()
+                }
+                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs text-white transition-colors hover:bg-indigo-700"
+              >
+                {step < steps.length - 1 ? "Next" : "Done"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Desktop: positioned tooltip
   const pos = el
     ? getTooltipPosition(el, s.placement)
     : { top: 200, left: window.innerWidth / 2 };
 
-  // Clamp tooltip so it doesn't overflow the viewport
   const tooltipWidth = 320;
   const tooltipHeight = 180;
   let left = pos.left - tooltipWidth / 2;
@@ -130,13 +196,7 @@ export default function OnboardingTour() {
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-black/30"
-        onClick={finish}
-      />
-
-      {/* Target highlight */}
+      <div className="fixed inset-0 z-40 bg-black/30" onClick={finish} />
       {el && (
         <div
           className="fixed z-40 rounded-lg ring-2 ring-indigo-500/60 ring-offset-2 ring-offset-transparent transition-all duration-300"
@@ -149,17 +209,12 @@ export default function OnboardingTour() {
           }}
         />
       )}
-
-      {/* Tooltip card */}
       <div
         ref={tooltipRef}
         className="fixed z-50 w-80 rounded-xl border bg-card shadow-2xl"
         style={{ top, left }}
       >
-        {/* Arrow */}
         <div className={getArrowStyle(s.placement)} />
-
-        {/* Progress dots */}
         <div className="flex gap-1.5 px-5 pt-4">
           {steps.map((_, i) => (
             <div
@@ -170,16 +225,12 @@ export default function OnboardingTour() {
             />
           ))}
         </div>
-
-        {/* Body */}
         <div className="px-5 pb-4 pt-3">
           <h3 className="mb-1 text-[15px] font-semibold">{s.title}</h3>
           <p className="text-sm leading-relaxed text-muted-foreground">
             {s.body}
           </p>
         </div>
-
-        {/* Actions */}
         <div className="flex items-center justify-between border-t px-5 py-3">
           <button
             onClick={finish}
