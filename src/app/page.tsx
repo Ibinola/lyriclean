@@ -11,28 +11,15 @@ import {
   exportPowerPoint,
 } from "@/lib/export";
 
-const LS_LINES = "lyriclean:linesPerBreak";
-
-function getInitialLines() {
-  if (typeof window === "undefined") return 0;
-  const stored = localStorage.getItem(LS_LINES);
-  return stored ? parseInt(stored, 10) : 0;
-}
-
 export default function Home() {
   const [rawLyrics, setRawLyrics] = useState("");
   const [cleanedLyrics, setCleanedLyrics] = useState("");
   const [displayedLyrics, setDisplayedLyrics] = useState("");
-  const [linesPerBreak, setLinesPerBreak] = useState(getInitialLines);
+  const [linesPerBreak, setLinesPerBreak] = useState(0);
   const [foundSections, setFoundSections] = useState<string[]>([]);
   const [showSearch, setShowSearch] = useState(false);
   const baseTextRef = useRef("");
   const findInputRef = useRef<HTMLInputElement>(null);
-
-  // Persist linesPerBreak
-  useEffect(() => {
-    localStorage.setItem(LS_LINES, String(linesPerBreak));
-  }, [linesPerBreak]);
 
   const rawLines = rawLyrics
     ? rawLyrics.split("\n").filter(Boolean).length
