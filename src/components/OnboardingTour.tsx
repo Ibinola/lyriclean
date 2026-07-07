@@ -1,71 +1,103 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Joyride, STATUS } from "react-joyride";
 
 const LS_KEY = "lyriclean:tourDone";
 
 const steps = [
   {
-    target: "main",
-    title: "Welcome to lyriclean",
-    content: "Let me show you around — it only takes 30 seconds.",
-    placement: "center" as const,
-    disableBeacon: true,
-  },
-  {
     target: "#input-area",
     title: "Paste Raw Lyrics",
-    content:
-      "Paste lyrics from WhatsApp, email, or a song sheet. lyriclean handles all the messy formatting.",
-    placement: "right" as const,
+    body: "Copy lyrics from WhatsApp or email and paste them here. lyriclean strips all the clutter automatically.",
   },
   {
     target: "#clean-btn",
     title: "Clean Lyrics",
-    content:
-      "Click this to strip fillers (x2, Repeat, Refrain), normalize section headers, and split into slides.",
-    placement: "bottom" as const,
+    body: "Click this to remove fillers (x2, Repeat, Refrain, emoji), normalize section headers, and split into slides.",
   },
   {
     target: "#lines-control",
     title: "Lines per Slide",
-    content:
-      "Set how many lines appear on each slide. Change it anytime and the output updates instantly.",
-    placement: "bottom" as const,
+    body: "Choose how many lines appear on each slide. Change it anytime \u2014 the output updates instantly.",
   },
   {
     target: "#output-panel",
     title: "Reorder & Edit",
-    content:
-      "Drag slides to rearrange the song order. Click any slide text to edit it directly.",
-    placement: "left" as const,
+    body: "Drag any slide to rearrange the song order. Click the text to edit a slide directly.",
   },
   {
     target: "#export-btn",
     title: "Export",
-    content:
-      "Download in EasyWorship, ProPresenter, or PowerPoint format — ready for service.",
-    placement: "top" as const,
+    body: "Download in EasyWorship, ProPresenter, or PowerPoint format \u2014 ready for Sunday.",
   },
 ];
 
 export default function OnboardingTour() {
-  const [run, setRun] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
     const done = localStorage.getItem(LS_KEY);
-    if (!done) setRun(true);
+    if (!done) setOpen(true);
   }, []);
 
-  const handleCallback = useCallback((data: Record<string, unknown>) => {
-    const { status } = data as { status: string };
-    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      localStorage.setItem(LS_KEY, "1");
-      setRun(false);
-    }
+  const finish = useCallback(() => {
+    localStorage.setItem(LS_KEY, "1");
+    setOpen(false);
   }, []);
 
-  // @ts-expect-error react-joyride types are incomplete
-  return <Joyride steps={steps} run={run} callback={handleCallback} continuous showProgress showSkipButton scrollToFirstStep disableScrolling={false} locale={{ back: "Previous", close: "Skip", last: "Done", next: "Next", skip: "Skip tour" }} styles={{ options: { primaryColor: "#4f46e5", textColor: "#1e1b4b", backgroundColor: "#ffffff", arrowColor: "#ffffff", overlayColor: "rgba(0, 0, 0, 0.4)", zIndex: 1000 }, tooltipContainer: { textAlign: "left" }, buttonNext: { backgroundColor: "#4f46e5", fontSize: "0.875rem", padding: "6px 16px" }, buttonBack: { color: "#6b7280", fontSize: "0.875rem", marginRight: 8 }, buttonSkip: { color: "#9ca3af", fontSize: "0.875rem" } }} />;
+  if (!open) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+        onClick={finish}
+      />
+      <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card p-6 shadow-2xl">
+        <div className="mb-5 flex gap-1.5">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 flex-1 rounded-full transition-colors ${
+                i === step ? "bg-indigo-600" : "bg-muted"
+              }`}
+            />
+          ))}
+        </div>
+
+        <h3 className="mb-1.5 text-lg font-semibold">{steps[step].title}</h3>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          {steps[step].body}
+        </p>
+
+        <div className="flex items-center justify-between">
+          <button
+            onClick={finish}
+            className="text-sm text-muted-foreground underline-offset-2 hover:underline"
+          >
+            Skip tour
+          </button>
+          <div className="flex items-center gap-2">
+            {step > 0 && (
+              <button
+                onClick={() => setStep(step - 1)}
+                className="rounded-lg border px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted"
+              >
+                Previous
+              </button>
+            )}
+            <button
+              onClick={() =>
+                step < steps.length - 1 ? setStep(step + 1) : finish()
+              }
+              className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm text-white transition-colors hover:bg-indigo-700"
+            >
+              {step < steps.length - 1 ? "Next" : "Done"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
