@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface ControlPanelProps {
   onClean: () => void;
   onCopy: () => void;
+  onExport: (format: "ews" | "pro" | "pptx") => void;
   linesPerBreak: number;
   onLinesPerBreakChange: (val: number) => void;
   onReplace: (find: string, replace: string) => void;
@@ -26,6 +27,7 @@ interface ControlPanelProps {
 export default function ControlPanel({
   onClean,
   onCopy,
+  onExport,
   linesPerBreak,
   onLinesPerBreakChange,
   onReplace,
@@ -42,6 +44,8 @@ export default function ControlPanel({
   const [findText, setFindText] = useState("");
   const [replaceText, setReplaceText] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = () => {
     onCopy();
@@ -113,6 +117,43 @@ export default function ControlPanel({
         >
           &#128270; Search &amp; Replace
         </Button>
+        <div className="relative" ref={exportRef}>
+          <Button
+            onClick={() => setShowExport(!showExport)}
+            disabled={!hasOutput}
+            variant="secondary"
+          >
+            &#8595; Export
+          </Button>
+          {showExport && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowExport(false)}
+              />
+              <div className="absolute bottom-full left-0 z-20 mb-1 w-44 overflow-hidden rounded-lg border bg-card shadow-lg">
+                <button
+                  onClick={() => { onExport("ews"); setShowExport(false); }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                >
+                  EasyWorship (.ews)
+                </button>
+                <button
+                  onClick={() => { onExport("pro"); setShowExport(false); }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                >
+                  ProPresenter (.pro)
+                </button>
+                <button
+                  onClick={() => { onExport("pptx"); setShowExport(false); }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                >
+                  PowerPoint (.pptx)
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Search & Replace */}

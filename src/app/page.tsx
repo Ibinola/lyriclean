@@ -5,16 +5,18 @@ import Header from "@/components/Header";
 import LyricEditor from "@/components/LyricEditor";
 import ControlPanel from "@/components/ControlPanel";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
-
-const SAMPLE =
-  "There is more, more to You o God\nThe Undoubted have ever known\nI want more, more of you Yahweh\nFill me up, till overflow\n\nRefrain:\nIna so in gan ka Yesu (Jesus, I want to see You)\nZuchiyata na neman Yesu (My heart is longing for Jesus)\nIn gan daukakan ka, Yesu (To see your glory, Jesus)\nZuchiyata na neman Yesu (My heart is longing for Jesus)\n\nI hunger and thirst for You, Yahweh\nIn a dry and weary land\nThere\u2019s no measure to how much of You I want\nConsume me now\n\n(Refrain)\n\nIna sonka, ya yesu (I love you dear Jesus)\nIn ganka, ya yesu (Let me see you dear Jesus)\nIna sonka, ya yesu (I love you dear Jesus)\nYa yesu Ya yesu (Dear Jesus, dear Jesus) (Repeat)\n\n(Refrain)\n\nIna sonka, ya yesu (I love you dear Jesus)\nIn ganka, ya yesu (Let me see you dear Jesus)\nIna sonka, ya yesu (I love you dear Jesus)\nYa yesu Ya yesu (Dear Jesus, dear Jesus) (Repeat)\n\n(Refrain)";
+import {
+  exportEasyWorship,
+  exportProPresenter,
+  exportPowerPoint,
+} from "@/lib/export";
 
 const LS_INPUT = "lyriclean:input";
 const LS_LINES = "lyriclean:linesPerBreak";
 
 function getInitialInput() {
-  if (typeof window === "undefined") return SAMPLE;
-  return localStorage.getItem(LS_INPUT) || SAMPLE;
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(LS_INPUT) || "";
 }
 
 function getInitialLines() {
@@ -53,9 +55,12 @@ export default function Home() {
   const cleanedLines = cleanedLyrics
     ? cleanedLyrics.split("\n").filter(Boolean).length
     : 0;
-  const slides = displayedLyrics
+  const slideCount = displayedLyrics
     ? displayedLyrics.split("\n\n").filter(Boolean).length
     : 0;
+  const slideList = displayedLyrics
+    ? displayedLyrics.split("\n\n").filter(Boolean)
+    : [];
 
   const applyFormatting = useCallback(
     (baseText: string) => {
@@ -108,6 +113,48 @@ export default function Home() {
     setCleanedLyrics(val);
   };
 
+  const handleSlidesReorder = (newSlides: string[]) => {
+    const text = newSlides.join("\n\n");
+    setDisplayedLyrics(text);
+    baseTextRef.current = text;
+    setCleanedLyrics(text);
+  };
+
+  const handleExport = async (format: "ews" | "pro" | "pptx") => {
+    if (!displayedLyrics) return;
+    const slides = displayedLyrics.split("\n\n").filter(Boolean);
+    const title = "Song";
+
+    switch (format) {
+      case "ews": {
+        const xml = exportEasyWorship(slides, title);
+        const blob = new Blob([xml], { type: "application/xml" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${title}.ews`;
+        a.click();
+        URL.revokeObjectURL(url);
+        break;
+      }
+      case "pro": {
+        const text = exportProPresenter(slides);
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${title}.pro`;
+        a.click();
+        URL.revokeObjectURL(url);
+        break;
+      }
+      case "pptx": {
+        await exportPowerPoint(slides, title);
+        break;
+      }
+    }
+  };
+
   const handleInputChange = (val: string) => {
     setRawLyrics(val);
     if (val === "") {
@@ -157,20 +204,23 @@ export default function Home() {
         <LyricEditor
           input={rawLyrics}
           output={displayedLyrics}
+          slides={slideList}
           onInputChange={handleInputChange}
           onOutputChange={handleOutputChange}
+          onSlidesReorder={handleSlidesReorder}
         />
 
         <ControlPanel
           onClean={handleClean}
           onCopy={handleCopy}
+          onExport={handleExport}
           linesPerBreak={linesPerBreak}
           onLinesPerBreakChange={handleLinesPerBreakChange}
           onReplace={handleReplace}
           rawLines={rawLines}
           cleanedLines={cleanedLines}
           sections={foundSections.length}
-          slides={slides}
+          slides={slideCount}
           showSlides={linesPerBreak > 0}
           hasOutput={cleanedLyrics.length > 0}
           showSearch={showSearch}

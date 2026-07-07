@@ -1,22 +1,43 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import SortableSections from "@/components/SortableSections";
 
 interface LyricEditorProps {
   input: string;
   output: string;
+  slides: string[];
   onInputChange: (val: string) => void;
   onOutputChange: (val: string) => void;
+  onSlidesReorder: (slides: string[]) => void;
 }
 
 export default function LyricEditor({
   input,
   output,
+  slides,
   onInputChange,
   onOutputChange,
+  onSlidesReorder,
 }: LyricEditorProps) {
   const [showEmpty, setShowEmpty] = useState(true);
+
+  const handleReorder = useCallback(
+    (newSlides: string[]) => {
+      onSlidesReorder(newSlides);
+    },
+    [onSlidesReorder],
+  );
+
+  const handleEditSlide = useCallback(
+    (index: number, text: string) => {
+      const updated = [...slides];
+      updated[index] = text;
+      onSlidesReorder(updated);
+    },
+    [slides, onSlidesReorder],
+  );
 
   return (
     <div className="grid flex-1 grid-cols-1 gap-4 min-h-0 md:grid-cols-2 md:gap-6">
@@ -47,6 +68,17 @@ export default function LyricEditor({
       <Card className="flex flex-col overflow-hidden">
         <div className="flex items-center justify-between border-b bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <span>Cleaned Lyrics</span>
+          <span className="flex items-center gap-1.5 text-[10px] font-normal normal-case text-muted-foreground">
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+              <circle cx="4" cy="2" r="1" />
+              <circle cx="8" cy="2" r="1" />
+              <circle cx="4" cy="6" r="1" />
+              <circle cx="8" cy="6" r="1" />
+              <circle cx="4" cy="10" r="1" />
+              <circle cx="8" cy="10" r="1" />
+            </svg>
+            Drag to reorder
+          </span>
         </div>
         <div className="relative flex-1 min-h-0">
           {!output && showEmpty ? (
@@ -56,6 +88,14 @@ export default function LyricEditor({
                 Paste lyrics in the left panel, then click{" "}
                 <strong className="text-foreground">Clean Lyrics</strong>.
               </p>
+            </div>
+          ) : slides.length > 1 ? (
+            <div className="absolute inset-0 overflow-y-auto p-3">
+              <SortableSections
+                slides={slides}
+                onReorder={handleReorder}
+                onEditSlide={handleEditSlide}
+              />
             </div>
           ) : (
             <div
@@ -67,7 +107,7 @@ export default function LyricEditor({
                   (e.target as HTMLDivElement).textContent || "",
                 )
               }
-              className="absolute inset-0 overflow-y-auto whitespace-pre-wrap p-4 font-mono text-sm leading-relaxed text-foreground outline-none focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:ring-inset dark:focus:bg-indigo-950"
+              className="absolute inset-0 overflow-y-auto whitespace-pre-wrap p-4 font-mono text-sm leading-relaxed text-foreground outline-none"
             >
               {output}
             </div>
