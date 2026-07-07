@@ -11,13 +11,7 @@ import {
   exportPowerPoint,
 } from "@/lib/export";
 
-const LS_INPUT = "lyriclean:input";
 const LS_LINES = "lyriclean:linesPerBreak";
-
-function getInitialInput() {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(LS_INPUT) || "";
-}
 
 function getInitialLines() {
   if (typeof window === "undefined") return 0;
@@ -26,23 +20,14 @@ function getInitialLines() {
 }
 
 export default function Home() {
-  const [rawLyrics, setRawLyrics] = useState(getInitialInput);
+  const [rawLyrics, setRawLyrics] = useState("");
   const [cleanedLyrics, setCleanedLyrics] = useState("");
   const [displayedLyrics, setDisplayedLyrics] = useState("");
   const [linesPerBreak, setLinesPerBreak] = useState(getInitialLines);
   const [foundSections, setFoundSections] = useState<string[]>([]);
   const [showSearch, setShowSearch] = useState(false);
   const baseTextRef = useRef("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const findInputRef = useRef<HTMLInputElement>(null);
-
-  // Persist input on change (debounced)
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      localStorage.setItem(LS_INPUT, rawLyrics);
-    }, 500);
-  }, [rawLyrics]);
 
   // Persist linesPerBreak
   useEffect(() => {
@@ -157,9 +142,6 @@ export default function Home() {
 
   const handleInputChange = (val: string) => {
     setRawLyrics(val);
-    if (val === "") {
-      localStorage.removeItem(LS_INPUT);
-    }
   };
 
   // Stale-safe refs for keyboard handler
