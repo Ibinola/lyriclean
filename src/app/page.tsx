@@ -8,6 +8,7 @@ import OnboardingTour from "@/components/OnboardingTour";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
 import { expandReferences } from "@/lib/expandSections";
 import { spellcheck } from "@/lib/spellcheck";
+import { detectDuplicates, type DuplicateGroup } from "@/lib/detectDuplicates";
 import {
   exportEasyWorship,
   exportProPresenter,
@@ -21,6 +22,7 @@ export default function Home() {
   const [linesPerBreak, setLinesPerBreak] = useState(0);
   const [foundSections, setFoundSections] = useState<string[]>([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
   const baseTextRef = useRef("");
   const findInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,6 +54,7 @@ export default function Home() {
     baseTextRef.current = result.text;
     setCleanedLyrics(result.text);
     setFoundSections(result.sections);
+    setDuplicates(detectDuplicates(result.text));
     applyFormatting(result.text);
   }, [rawLyrics, applyFormatting]);
 
@@ -84,10 +87,35 @@ export default function Home() {
     }
   };
 
+  const handleDuplicateRemove = useCallback((paraIndex: number) => {
+    const paras = baseTextRef.current.split("\n\n");
+    if (paraIndex < 0 || paraIndex >= paras.length) return;
+    paras.splice(paraIndex, 1);
+    const newText = paras.join("\n\n").trim();
+    baseTextRef.current = newText;
+    setCleanedLyrics(newText);
+    setDuplicates(detectDuplicates(newText));
+    applyFormatting(newText);
+  }, [applyFormatting]);
+
+  const handleDuplicateRename = useCallback((paraIndex: number, newHeader: string) => {
+    const paras = baseTextRef.current.split("\n\n");
+    if (paraIndex < 0 || paraIndex >= paras.length) return;
+    const lines = paras[paraIndex].split("\n");
+    lines[0] = newHeader;
+    paras[paraIndex] = lines.join("\n");
+    const newText = paras.join("\n\n").trim();
+    baseTextRef.current = newText;
+    setCleanedLyrics(newText);
+    setDuplicates(detectDuplicates(newText));
+    applyFormatting(newText);
+  }, [applyFormatting]);
+
   const handleOutputChange = (val: string) => {
     setDisplayedLyrics(val);
     baseTextRef.current = val;
     setCleanedLyrics(val);
+    setDuplicates([]);
   };
 
   const handleSlidesReorder = (newSlides: string[]) => {
@@ -95,6 +123,7 @@ export default function Home() {
     setDisplayedLyrics(text);
     baseTextRef.current = text;
     setCleanedLyrics(text);
+    setDuplicates([]);
   };
 
   const handleExport = async (format: "ews" | "pro" | "pptx") => {
@@ -141,6 +170,7 @@ export default function Home() {
       baseTextRef.current = result.text;
       setCleanedLyrics(result.text);
       setFoundSections(result.sections);
+      setDuplicates(detectDuplicates(result.text));
       applyFormatting(result.text);
     },
     [applyFormatting],
@@ -194,10 +224,13 @@ export default function Home() {
           input={rawLyrics}
           output={displayedLyrics}
           slides={slideList}
+          duplicates={duplicates}
           onInputChange={handleInputChange}
           onOutputChange={handleOutputChange}
           onSlidesReorder={handleSlidesReorder}
           onLyricsFound={handleLyricsFound}
+          onDuplicateRemove={handleDuplicateRemove}
+          onDuplicateRename={handleDuplicateRename}
         />
 
         <ControlPanel
@@ -213,6 +246,7 @@ export default function Home() {
           slides={slideCount}
           showSlides={linesPerBreak > 0}
           hasOutput={cleanedLyrics.length > 0}
+          duplicates={duplicates.length}
           showSearch={showSearch}
           onShowSearchChange={setShowSearch}
           findInputRef={findInputRef}

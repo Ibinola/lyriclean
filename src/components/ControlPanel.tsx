@@ -22,6 +22,7 @@ interface ControlPanelProps {
   showSearch: boolean;
   onShowSearchChange: (val: boolean) => void;
   findInputRef: React.RefObject<HTMLInputElement | null>;
+  duplicates: number;
 }
 
 export default function ControlPanel({
@@ -40,6 +41,7 @@ export default function ControlPanel({
   showSearch,
   onShowSearchChange,
   findInputRef,
+  duplicates,
 }: ControlPanelProps) {
   const [findText, setFindText] = useState("");
   const [replaceText, setReplaceText] = useState("");
@@ -239,6 +241,13 @@ export default function ControlPanel({
           <span>
             <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
             <span className="font-semibold text-foreground">{slides}</span> slides
+          </span>
+        )}
+        {duplicates > 0 && (
+          <span>
+            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-red-500" />
+            <span className="font-semibold text-red-600 dark:text-red-400">{duplicates}</span>{" "}
+            duplicate{duplicates !== 1 ? "s" : ""} flagged
           </span>
         )}
       </div>
