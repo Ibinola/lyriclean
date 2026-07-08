@@ -6,6 +6,7 @@ import LyricEditor from "@/components/LyricEditor";
 import ControlPanel from "@/components/ControlPanel";
 import OnboardingTour from "@/components/OnboardingTour";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
+import { expandReferences } from "@/lib/expandSections";
 import {
   exportEasyWorship,
   exportProPresenter,
@@ -44,7 +45,8 @@ export default function Home() {
   );
 
   const handleClean = useCallback(() => {
-    const result = cleanLyrics(rawLyrics);
+    const expanded = expandReferences(rawLyrics);
+    const result = cleanLyrics(expanded);
     baseTextRef.current = result.text;
     setCleanedLyrics(result.text);
     setFoundSections(result.sections);
