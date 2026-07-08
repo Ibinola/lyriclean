@@ -132,6 +132,20 @@ export default function Home() {
     }
   };
 
+  const handleLyricsFound = useCallback(
+    (lyrics: string, title: string, artist: string) => {
+      setRawLyrics(lyrics);
+      const expanded = expandReferences(lyrics);
+      const checked = spellcheck(expanded);
+      const result = cleanLyrics(checked);
+      baseTextRef.current = result.text;
+      setCleanedLyrics(result.text);
+      setFoundSections(result.sections);
+      applyFormatting(result.text);
+    },
+    [applyFormatting],
+  );
+
   const handleInputChange = (val: string) => {
     setRawLyrics(val);
   };
@@ -183,6 +197,7 @@ export default function Home() {
           onInputChange={handleInputChange}
           onOutputChange={handleOutputChange}
           onSlidesReorder={handleSlidesReorder}
+          onLyricsFound={handleLyricsFound}
         />
 
         <ControlPanel

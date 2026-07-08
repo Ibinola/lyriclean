@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { useCallback, useState } from "react";
 import SortableSections from "@/components/SortableSections";
+import LyricsSearch from "@/components/LyricsSearch";
 
 interface LyricEditorProps {
   input: string;
@@ -11,6 +12,7 @@ interface LyricEditorProps {
   onInputChange: (val: string) => void;
   onOutputChange: (val: string) => void;
   onSlidesReorder: (slides: string[]) => void;
+  onLyricsFound: (lyrics: string, title: string, artist: string) => void;
 }
 
 export default function LyricEditor({
@@ -20,8 +22,10 @@ export default function LyricEditor({
   onInputChange,
   onOutputChange,
   onSlidesReorder,
+  onLyricsFound,
 }: LyricEditorProps) {
   const [showEmpty, setShowEmpty] = useState(true);
+  const [showLyricsSearch, setShowLyricsSearch] = useState(false);
 
   const handleReorder = useCallback(
     (newSlides: string[]) => {
@@ -69,18 +73,33 @@ export default function LyricEditor({
       <Card id="output-panel" className="flex flex-col overflow-hidden">
         <div className="flex items-center justify-between border-b bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <span>Cleaned Lyrics</span>
-          <span className="flex items-center gap-1.5 text-[10px] font-normal normal-case text-muted-foreground">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
-              <circle cx="4" cy="2" r="1" />
-              <circle cx="8" cy="2" r="1" />
-              <circle cx="4" cy="6" r="1" />
-              <circle cx="8" cy="6" r="1" />
-              <circle cx="4" cy="10" r="1" />
-              <circle cx="8" cy="10" r="1" />
-            </svg>
-            Drag to reorder
+          <span className="flex items-center gap-3">
+            <button
+              onClick={() => setShowLyricsSearch(true)}
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-normal normal-case text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              Search Lyrics
+            </button>
+            <span className="flex items-center gap-1.5 text-[10px] font-normal normal-case text-muted-foreground">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+                <circle cx="4" cy="2" r="1" />
+                <circle cx="8" cy="2" r="1" />
+                <circle cx="4" cy="6" r="1" />
+                <circle cx="8" cy="6" r="1" />
+                <circle cx="4" cy="10" r="1" />
+                <circle cx="8" cy="10" r="1" />
+              </svg>
+              Drag to reorder
+            </span>
           </span>
         </div>
+
+        <LyricsSearch
+          isOpen={showLyricsSearch}
+          onClose={() => setShowLyricsSearch(false)}
+          onLyricsFound={onLyricsFound}
+        />
         <div className="relative flex-1 min-h-0">
           {!output && showEmpty ? (
             <div className="flex h-full flex-col items-center justify-center px-4 text-center text-muted-foreground">

@@ -1,7 +1,24 @@
 const sectionLabels = [
   "verse", "chorus", "bridge", "intro", "outro",
   "pre-chorus", "refrain", "hook", "tag", "interlude",
+  "chants", "instrumental",
 ];
+
+const labelAliases = new Map([
+  ["refrén", "chorus"],
+  ["verze", "verse"],
+  ["verzus", "verse"],
+  ["intró", "intro"],
+  ["instrumentális", "instrumental"],
+  ["outró", "outro"],
+  ["strofa", "verse"],
+  ["ritornello", "chorus"],
+  ["ponte", "bridge"],
+]);
+
+function stripANSI(str: string): string {
+  return str.replace(/\x1b\[[\d;]*[a-zA-Z]/g, "");
+}
 
 function removeEmoji(str: string): string {
   return str
@@ -12,30 +29,100 @@ function removeEmoji(str: string): string {
     .trim();
 }
 
-function isSectionLabelLine(trimmed: string): boolean {
-  const label = trimmed.replace(/^\[|\]$/g, "").replace(/:$/, "").trim();
+function resolveLabelAlias(label: string): string {
+  const lower = label.toLowerCase().trim();
+  for (const [alias, english] of labelAliases) {
+    if (lower === alias) return english;
+    if (new RegExp(`^${alias}\\s*\\d*$`, "i").test(lower)) {
+      const num = lower.match(/\d+/);
+      return english + (num ? ` ${num[0]}` : "");
+    }
+    const colonIdx = lower.indexOf(":");
+    if (colonIdx > 0) {
+      const prefix = lower.slice(0, colonIdx).trim();
+      if (prefix === alias) return english;
+      const prefixNum = prefix.match(/\d+/);
+      if (new RegExp(`^${alias}\\s*\\d*$`, "i").test(prefix)) {
+        return english + (prefixNum ? ` ${prefixNum[0]}` : "");
+      }
+    }
+  }
+  return label;
+}
+
+function matchesSectionLabel(text: string): boolean {
+  let label = text.replace(/^\[|\]$/g, "").replace(/:$/, "").trim();
   const lower = label.toLowerCase();
   if (sectionLabels.includes(lower)) return true;
+  if (sectionLabels.some((s) => new RegExp(`^${s}\\s*\\d*$`, "i").test(lower))) return true;
   if (/^verse\s*\d*$/i.test(lower)) return true;
   if (/^pre[- ]?chorus$/i.test(lower)) return true;
+  if (resolveLabelAlias(label) !== label) return true;
+  const colonIdx = lower.indexOf(":");
+  if (colonIdx > 0) {
+    const prefix = lower.slice(0, colonIdx).trim();
+    if (sectionLabels.includes(prefix)) return true;
+    if (sectionLabels.some((s) => new RegExp(`^${s}\\s*\\d*$`, "i").test(prefix))) return true;
+    if (resolveLabelAlias(prefix) !== prefix) return true;
+  }
   return false;
 }
 
 function normalizeSectionLabel(trimmed: string): string {
   let label = trimmed.replace(/^\[|\]$/g, "").replace(/:$/, "").trim();
+  const colonIdx = label.indexOf(":");
+  if (colonIdx > 0) {
+    const prefix = label.slice(0, colonIdx).trim();
+    const lowerPrefix = prefix.toLowerCase();
+    if (sectionLabels.includes(lowerPrefix) || sectionLabels.some((s) => new RegExp(`^${s}\\s*\\d*$`, "i").test(lowerPrefix))) {
+      label = prefix;
+    }
+    if (resolveLabelAlias(prefix) !== prefix) label = prefix;
+  }
+  const aliasResolved = resolveLabelAlias(label);
+  if (aliasResolved !== label) return capitalize(aliasResolved);
   const lower = label.toLowerCase();
   if (/^pre[- ]?chorus$/i.test(lower)) return "Pre-Chorus";
   if (/^verse\s*\d*$/i.test(lower)) {
     const num = label.match(/\d+/);
     return "Verse " + (num ? num[0] : "");
   }
+  for (const s of sectionLabels) {
+    const m = lower.match(new RegExp(`^${s}\\s*(\\d+)?$`, "i"));
+    if (m) {
+      const n = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+      return m[1] ? `${n} ${m[1]}` : n;
+    }
+  }
   return label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function extractBracketedLabel(trimmed: string): string | null {
+  const m = trimmed.match(/\[([^\]]+)\]/);
+  if (m && matchesSectionLabel(`[${m[1].trim()}]`)) {
+    const full = `[${m[1].trim()}]`;
+    const before = trimmed.slice(0, m.index).trim();
+    const after = trimmed.slice(m.index! + m[0].length).trim();
+    if (!before || matchesSectionLabel(full)) {
+      return full;
+    }
+  }
+  return null;
 }
 
 function isFillerLine(trimmed: string): boolean {
   const lower = trimmed.toLowerCase();
-  if (/^[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumental|interlude)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?$/.test(lower)) return true;
+  if (/^[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|interlude|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?$/.test(lower)) return true;
+  if (/^\(sung\s+in\s+\w+\)$/i.test(trimmed)) return true;
+  if (/^\[.*?\]$/.test(trimmed) && /[?]/.test(trimmed)) return true;
+  if (/^Repeat:\s/i.test(trimmed)) return true;
+  if (/^Refrain:\s?$/i.test(trimmed)) return true;
   if (removeEmoji(trimmed) === "" && trimmed.length > 0) return true;
+  if (/^\d+\s*contributors?/i.test(trimmed)) return true;
   return false;
 }
 
@@ -47,7 +134,8 @@ export interface CleanResult {
 export function cleanLyrics(raw: string): CleanResult {
   if (!raw || !raw.trim()) return { text: "", sections: [] };
 
-  const lines = raw.split("\n");
+  const text = stripANSI(raw);
+  const lines = text.split("\n");
   const result: string[] = [];
   const foundSections: string[] = [];
 
@@ -65,7 +153,17 @@ export function cleanLyrics(raw: string): CleanResult {
 
     if (isFillerLine(trimmed)) continue;
 
-    if (isSectionLabelLine(trimmed)) {
+    const bracketed = extractBracketedLabel(trimmed);
+    if (bracketed) {
+      const normalized = normalizeSectionLabel(bracketed);
+      result.push(normalized);
+      if (!foundSections.includes(normalized)) {
+        foundSections.push(normalized);
+      }
+      continue;
+    }
+
+    if (matchesSectionLabel(trimmed)) {
       const normalized = normalizeSectionLabel(trimmed);
       result.push(normalized);
       if (!foundSections.includes(normalized)) {
@@ -74,13 +172,17 @@ export function cleanLyrics(raw: string): CleanResult {
       continue;
     }
 
+    // Pure bracket line that isn't a recognized section → filler
+    if (/^\[.+\]$/.test(trimmed)) continue;
+
     trimmed = trimmed.replace(
-      /\s*[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumental)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?\s*$/i,
+      /\s*[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?\s*$/i,
       "",
     );
 
     trimmed = trimmed.replace(/^\s*\d+[.)]\s*/, "");
     trimmed = trimmed.replace(/^\s*[-•·‣⁃]\s*/, "");
+    trimmed = trimmed.replace(/^(Call|Response):\s*/i, "");
 
     trimmed = trimmed.trim();
     if (!trimmed) continue;
@@ -111,7 +213,7 @@ export function applyLineBreaks(text: string, lpb: number): string {
 
   const paragraphs = text.split("\n\n");
   const sectionPattern =
-    /^(Verse\s*\d*|Chorus|Bridge|Intro|Outro|Pre-Chorus|Refrain|Hook|Tag|Interlude)$/i;
+    /^(Verse\s*\d*|Chorus(?:\s+\d+)?|Bridge(?:\s+\d+)?|Intro(?:\s+\d+)?|Outro(?:\s+\d+)?|Pre-Chorus|Refrain|Hook|Tag|Interlude|Chants|Instrumental(?:\s+\d+)?)$/i;
   const result: string[] = [];
 
   for (const para of paragraphs) {
