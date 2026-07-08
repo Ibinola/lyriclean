@@ -7,6 +7,7 @@ import ControlPanel from "@/components/ControlPanel";
 import OnboardingTour from "@/components/OnboardingTour";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
 import { expandReferences } from "@/lib/expandSections";
+import { spellcheck } from "@/lib/spellcheck";
 import {
   exportEasyWorship,
   exportProPresenter,
@@ -46,7 +47,8 @@ export default function Home() {
 
   const handleClean = useCallback(() => {
     const expanded = expandReferences(rawLyrics);
-    const result = cleanLyrics(expanded);
+    const checked = spellcheck(expanded);
+    const result = cleanLyrics(checked);
     baseTextRef.current = result.text;
     setCleanedLyrics(result.text);
     setFoundSections(result.sections);
