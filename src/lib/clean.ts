@@ -114,10 +114,16 @@ function extractBracketedLabel(trimmed: string): string | null {
   return null;
 }
 
-const perfTerms = [
+const instructionWords = new Set([
   "repeat", "refrain", "interlude", "instrumental", "chants",
   "lead", "bgv", "unison", "harmony",
-];
+]);
+
+const noiseWords = new Set([
+  "a", "an", "the", "and", "or", "but", "in", "on", "at", "to",
+  "for", "of", "with", "by", "from", "into", "through", "like",
+  "things", "as", "if", "so", "than", "then", "just", "very",
+]);
 
 function isFillerLine(trimmed: string): boolean {
   const lower = trimmed.toLowerCase();
@@ -128,13 +134,13 @@ function isFillerLine(trimmed: string): boolean {
   if (/^Refrain:\s?$/i.test(trimmed)) return true;
   if (removeEmoji(trimmed) === "" && trimmed.length > 0) return true;
   if (/^\d+\s*contributors?/i.test(trimmed)) return true;
-  if (/^repeat\s+(?:\d+\s*x\s*\d*|x\d+|lead|bgv|unison|harmony|\(|\[)/i.test(trimmed)) return true;
-  if (/^(?:lead|bgv|unison|harmony)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?\s*$/i.test(trimmed)) return true;
-  if (/^(?:\d+\s*x\s*\d*|x\d+)(?:\s+(?:lead|bgv|unison|harmony))+\s*$/i.test(trimmed)) return true;
-  const xCount = (lower.match(/(?<!\d)(?:\d+x|x\d+)(?!\d)/g) || []).length;
-  const perfCount = perfTerms.filter((t) => new RegExp(`\\b${t}\\b`, "i").test(trimmed)).length;
-  if (xCount + perfCount >= 3) return true;
-  return false;
+  const clean = lower.replace(/(?:\d+\s*x\s*\d*|x\d+)/g, "");
+  const words = clean.split(/[\s,;:!?()\[\]'"\/]+/).filter((w) => w.length > 0);
+  if (words.length === 0) return true;
+  const nonNoise = words.filter((w) => !noiseWords.has(w));
+  if (nonNoise.length === 0) return false;
+  const instructionCount = nonNoise.filter((w) => instructionWords.has(w)).length;
+  return instructionCount / nonNoise.length >= 0.8;
 }
 
 export interface CleanResult {
