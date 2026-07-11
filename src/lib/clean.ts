@@ -114,6 +114,11 @@ function extractBracketedLabel(trimmed: string): string | null {
   return null;
 }
 
+const perfTerms = [
+  "repeat", "refrain", "interlude", "instrumental", "chants",
+  "lead", "bgv", "unison", "harmony",
+];
+
 function isFillerLine(trimmed: string): boolean {
   const lower = trimmed.toLowerCase();
   if (/^[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|interlude|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?$/.test(lower)) return true;
@@ -125,6 +130,10 @@ function isFillerLine(trimmed: string): boolean {
   if (/^\d+\s*contributors?/i.test(trimmed)) return true;
   if (/^repeat\s+(?:\d+\s*x\s*\d*|x\d+|lead|bgv|unison|harmony|\(|\[)/i.test(trimmed)) return true;
   if (/^(?:lead|bgv|unison|harmony)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?\s*$/i.test(trimmed)) return true;
+  if (/^(?:\d+\s*x\s*\d*|x\d+)(?:\s+(?:lead|bgv|unison|harmony))+\s*$/i.test(trimmed)) return true;
+  const xCount = (lower.match(/(?<!\d)(?:\d+x|x\d+)(?!\d)/g) || []).length;
+  const perfCount = perfTerms.filter((t) => new RegExp(`\\b${t}\\b`, "i").test(trimmed)).length;
+  if (xCount + perfCount >= 3) return true;
   return false;
 }
 
@@ -177,11 +186,14 @@ export function cleanLyrics(raw: string): CleanResult {
     // Pure bracket line that isn't a recognized section → filler
     if (/^\[.+\]$/.test(trimmed)) continue;
 
+    const hasXNumber = /(?:\d+\s*x\s*\d*|x\d+)/i.test(trimmed);
     trimmed = trimmed.replace(
       /\s*[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?\s*$/i,
       "",
     );
-    trimmed = trimmed.replace(/\s*(?:lead|bgv|unison|harmony)\s*$/i, "");
+    if (hasXNumber) {
+      trimmed = trimmed.replace(/\s*(?:lead|bgv|unison|harmony)\s*$/i, "");
+    }
     trimmed = trimmed.replace(
       /\s*[\[\(]?\s*(?:\d+\s*x\s*\d*|x\d+)\s*[\]\)]?\s*$/i,
       "",
