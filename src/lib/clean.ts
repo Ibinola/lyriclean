@@ -123,6 +123,8 @@ function isFillerLine(trimmed: string): boolean {
   if (/^Refrain:\s?$/i.test(trimmed)) return true;
   if (removeEmoji(trimmed) === "" && trimmed.length > 0) return true;
   if (/^\d+\s*contributors?/i.test(trimmed)) return true;
+  if (/^repeat\s+(?:\d+\s*x\s*\d*|x\d+|lead|bgv|unison|harmony|\(|\[)/i.test(trimmed)) return true;
+  if (/^(?:lead|bgv|unison|harmony)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?\s*$/i.test(trimmed)) return true;
   return false;
 }
 
@@ -177,6 +179,11 @@ export function cleanLyrics(raw: string): CleanResult {
 
     trimmed = trimmed.replace(
       /\s*[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?\s*$/i,
+      "",
+    );
+    trimmed = trimmed.replace(/\s*(?:lead|bgv|unison|harmony)\s*$/i, "");
+    trimmed = trimmed.replace(
+      /\s*[\[\(]?\s*(?:\d+\s*x\s*\d*|x\d+)\s*[\]\)]?\s*$/i,
       "",
     );
 
