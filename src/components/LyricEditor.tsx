@@ -17,6 +17,7 @@ interface LyricEditorProps {
   onLyricsFound: (lyrics: string, title: string, artist: string) => void;
   onDuplicateRemove: (paraIndex: number) => void;
   onDuplicateRename: (paraIndex: number, newHeader: string) => void;
+  onPaste?: (e: React.ClipboardEvent) => void;
 }
 
 function nextHeader(header: string): string | null {
@@ -38,6 +39,7 @@ export default function LyricEditor({
   onLyricsFound,
   onDuplicateRemove,
   onDuplicateRename,
+  onPaste,
 }: LyricEditorProps) {
   const [showEmpty, setShowEmpty] = useState(true);
   const [showLyricsSearch, setShowLyricsSearch] = useState(false);
@@ -81,6 +83,7 @@ export default function LyricEditor({
             id="input-area"
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
+            onPaste={onPaste}
             placeholder="Paste raw lyrics here..."
             spellCheck={false}
             className="absolute inset-0 resize-none border-0 bg-transparent p-4 font-mono text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"

@@ -1,5 +1,30 @@
 # Shipping Log
 
+## [v0.9] — 2026-07-21 — Phase 1: Core UX (Undo, Auto-save, Preferences, Report)
+
+| Area | Change |
+|------|--------|
+| **Undo/Redo** | History stack with push/undo/redo; `⌘+Z` / `⌘+Shift+Z`; Undo/Redo buttons in ControlPanel |
+| **Reset to original** | One-click button to clear cleaned output and start over |
+| **Auto-save** | State persisted to `localStorage` 1s after every change, restored on page load |
+| **Cleaning preferences** | Settings panel with 14 toggleable cleaning rules, organized into 3 groups with Enable/Disable All per group; persisted to `localStorage` |
+| **Cleaning report** | Post-cleaning banner showing filler lines removed, spelling corrections, sections detected, line reduction |
+| **TXT download** | Plain Text (.txt) option added to Export dropdown |
+| **Auto-paste detection** | `onPaste` handler triggers when pasted content >20 chars |
+| **Keyboard shortcuts** | Added `⌘+Z` (undo), `⌘+Shift+Z` (redo); shortcuts modal now lists all 6 shortcuts |
+
+### Files
+- `src/lib/cleaningOptions.ts` — new
+- `src/lib/history.ts` — new
+- `src/components/SettingsPanel.tsx` — new
+- `src/lib/clean.ts` — refactored to accept `CleaningOptions`, return `CleaningReport`
+- `src/app/tool/page.tsx` — wired history, auto-save, preferences, report, TXT export, auto-paste
+- `src/components/ControlPanel.tsx` — added Undo/Redo/Reset, Rules, TXT export, cleaning report banner
+- `src/components/LyricEditor.tsx` — added `onPaste` prop
+- `src/components/KeyboardShortcuts.tsx` — updated to show all 6 shortcuts
+
+---
+
 ## [v0.8] — 2026-07-21 — ESLint fix + CI green
 
 | Area | Change |

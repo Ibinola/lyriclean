@@ -79,7 +79,38 @@ Church projection teams receive raw lyrics at the last minute — via email, mes
 
 ---
 
-## v5 — Future
+## v5 — Pipeline Hardening (shipped)
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 1 | **Duplicate Detection** | Jaccard similarity ≥75% flags similar sections; inline remove, rename, or keep |
+| 2 | **Ratio-based Filler Detection** | Replaced fragile regex pile with principled classifier (≥80% instruction words = discard) |
+| 3 | **Test Suite** | 75 unit tests across all pipeline modules (vitest) |
+| 4 | **Error Boundary** | Catches uncaught React errors with "Try again" fallback |
+| 5 | **Toast Notifications** | Success/error/info toasts for copy, export, clean, and lyrics-lookup |
+| 6 | **Loading States** | Spinners and disabled states on Clean and Export buttons |
+| 7 | **Changelog UI** | "What's New" modal in footer showing release notes |
+| 8 | **CI/CD** | GitHub Actions (lint → test → build) on push/PR |
+| 9 | **A11y** | `role="list"`, `aria-roledescription`, `aria-label`, `role="textbox"` on sortable cards |
+| 10 | **Spellcheck Cleanup** | Removed 7 duplicate/correct-spelling entries from correction map |
+| 11 | **Code Split** | `clean.ts` refactored into `sectionLabels.ts` + `fillerDetection.ts` |
+
+---
+
+## v6 — Core UX (shipped)
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 1 | **Undo/Redo/Reset** | History stack (50 snapshots); `⌘+Z`, `⌘+Shift+Z`; Undo/Redo/Reset buttons in toolbar |
+| 2 | **Auto-save** | Snapshot persisted to `localStorage` 1s after every change; restored on page load |
+| 3 | **Toggleable cleaning rules** | 14 rules in 3 groups (Filler & Instructions, Annotations & Prefixes, Formatting); saved to `localStorage` |
+| 4 | **TXT export** | Plain Text (.txt) download added to Export dropdown |
+| 5 | **Auto-paste detection** | `onPaste` handler auto-triggers on pasted content >20 chars |
+| 6 | **Cleaning report** | Post-clean banner: filler removed, spelling corrections, sections detected, line reduction |
+
+---
+
+## v7 — Future
 
 | # | Feature | Description |
 |---|---------|-------------|
@@ -136,6 +167,11 @@ Church projection teams receive raw lyrics at the last minute — via email, mes
 - OpenAPI spec for future API consumers
 - Split `annotationStripper.ts` from `clean.ts`
 - Strict TypeScript mode (`tsconfig.json` has `strict: true` but code has `any` types)
+- Live cleaning while typing (debounced auto-clean)
+- File drag-and-drop import (TXT)
+- Diff/highlight changes view
+- Presentation slide preview
+- Custom removable keywords in filler detection
 
 ## Definition of Done (Current)
 - [x] Paste raw lyrics → cleaned output in <500ms
@@ -150,7 +186,7 @@ Church projection teams receive raw lyrics at the last minute — via email, mes
 - [x] Spellcheck — 80+ worship typos auto-corrected
 - [x] Section expansion — `(Refrain)` / `(Repeat)` expand to full content
 - [x] Lyrics lookup — search Genius, LRCLIB, African Gospel Lyrics
-- [x] Export — EasyWorship, ProPresenter, PowerPoint
+- [x] Export — EasyWorship, ProPresenter, PowerPoint, TXT
 - [x] Slide reordering — dnd-kit drag-and-drop; contentEditable cards
 - [x] Dark mode — no flash on load, follows system preference
 - [x] Multi-language — Hungarian, Italian, English section labels
@@ -164,3 +200,10 @@ Church projection teams receive raw lyrics at the last minute — via email, mes
 - [x] CI/CD — GitHub Actions (lint, test, build)
 - [x] Accessibility — ARIA roles on sortable slide list
 - [x] Code quality — Prettier formatting, spellcheck deduped, clean.ts modularized
+- [x] Undo/Redo — 50-snapshot history stack with keyboard shortcuts
+- [x] Reset to original — one-click clear of cleaned output
+- [x] Auto-save — localStorage snapshot restored on page load
+- [x] Toggleable cleaning rules — 14 rules in 3 groups with settings panel
+- [x] TXT export — plain text download
+- [x] Auto-paste detection — onPaste handler auto-triggers
+- [x] Cleaning report — post-clean banner with per-category stats

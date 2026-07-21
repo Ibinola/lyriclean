@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useRef, useState } from "react";
+import type { CleaningReport } from "@/lib/cleaningOptions";
 
 interface ControlPanelProps {
   onClean: () => void;
   onCopy: () => void;
-  onExport: (format: "ews" | "pro" | "pptx") => void;
+  onExport: (format: "ews" | "pro" | "pptx" | "txt") => void;
   linesPerBreak: number;
   onLinesPerBreakChange: (val: number) => void;
   onReplace: (find: string, replace: string) => void;
@@ -24,7 +25,16 @@ interface ControlPanelProps {
   findInputRef: React.RefObject<HTMLInputElement | null>;
   duplicates: number;
   cleaning: boolean;
-  exporting: "ews" | "pro" | "pptx" | null;
+  exporting: "ews" | "pro" | "pptx" | "txt" | null;
+  canUndo: boolean;
+  canRedo: boolean;
+  hasChanges: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  onReset: () => void;
+  onSettingsOpen: () => void;
+  lastReport: CleaningReport | null;
+  onDismissReport: () => void;
 }
 
 export default function ControlPanel({
@@ -46,6 +56,15 @@ export default function ControlPanel({
   duplicates,
   cleaning,
   exporting,
+  canUndo,
+  canRedo,
+  hasChanges,
+  onUndo,
+  onRedo,
+  onReset,
+  onSettingsOpen,
+  lastReport,
+  onDismissReport,
 }: ControlPanelProps) {
   const [findText, setFindText] = useState("");
   const [replaceText, setReplaceText] = useState("");
@@ -66,6 +85,48 @@ export default function ControlPanel({
 
   return (
     <div className="space-y-3">
+      {/* Cleaning report banner */}
+      {lastReport && (
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 dark:border-emerald-800/30 dark:bg-emerald-950/20">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <span className="font-medium text-emerald-700 dark:text-emerald-400">
+              Cleaning Report
+            </span>
+            {lastReport.fillerLinesRemoved > 0 && (
+              <span>
+                <span className="font-semibold text-emerald-800 dark:text-emerald-300">
+                  {lastReport.fillerLinesRemoved}
+                </span>{" "}
+                filler lines removed
+              </span>
+            )}
+            {lastReport.spellcheckCorrections > 0 && (
+              <span>
+                <span className="font-semibold text-emerald-800 dark:text-emerald-300">
+                  {lastReport.spellcheckCorrections}
+                </span>{" "}
+                spelling corrections
+              </span>
+            )}
+            <span>
+              <span className="font-semibold text-emerald-800 dark:text-emerald-300">
+                {lastReport.sectionsDetected}
+              </span>{" "}
+              sections detected
+            </span>
+            <span>
+              {lastReport.totalLinesBefore} → {lastReport.totalLinesAfter} lines
+            </span>
+          </div>
+          <button
+            onClick={onDismissReport}
+            className="shrink-0 rounded-md px-1.5 py-0.5 text-xs text-emerald-600 transition-colors hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Lines per slide */}
       <div
         id="lines-control"
@@ -121,17 +182,55 @@ export default function ControlPanel({
         <kbd className="hidden items-center rounded-md border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm sm:inline-flex">
           ⌘+Enter
         </kbd>
+
+        <Button
+          onClick={onUndo}
+          disabled={!canUndo}
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground"
+          title="Undo (⌘+Z)"
+        >
+          &#8630; Undo
+        </Button>
+        <Button
+          onClick={onRedo}
+          disabled={!canRedo}
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground"
+          title="Redo (⌘+Shift+Z)"
+        >
+          &#8631; Redo
+        </Button>
+        <Button
+          onClick={onReset}
+          disabled={!hasChanges}
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground"
+          title="Reset to original"
+        >
+          &#8635; Reset
+        </Button>
+
         <Button
           onClick={handleCopy}
           disabled={!hasOutput}
           variant={copied ? "default" : "secondary"}
           className={copied ? "bg-emerald-600 hover:bg-emerald-700" : ""}
         >
-          {copied ? "\u2713 Copied!" : "\u{1F4CB} Copy to Clipboard"}
+          {copied ? "\u2713 Copied!" : "\u{1F4CB} Copy"}
         </Button>
+
         <Button onClick={() => onShowSearchChange(!showSearch)} variant="secondary">
-          &#128270; Search &amp; Replace
+          &#128270; Search
         </Button>
+
+        <Button onClick={onSettingsOpen} variant="secondary" title="Cleaning rules">
+          &#9881; Rules
+        </Button>
+
         <div className="relative" ref={exportRef}>
           <Button
             id="export-btn"
@@ -147,10 +246,15 @@ export default function ControlPanel({
               <div className="fixed inset-0 z-10" onClick={() => setShowExport(false)} />
               <div className="absolute bottom-full left-0 z-20 mb-1 w-52 overflow-hidden rounded-lg border bg-card shadow-lg max-sm:bottom-auto max-sm:top-full max-sm:mb-0 max-sm:mt-1">
                 <button
-                  onClick={() => {
-                    onExport("ews");
-                    setShowExport(false);
-                  }}
+                  onClick={() => { onExport("txt"); setShowExport(false); }}
+                  disabled={exporting !== null}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
+                >
+                  {exporting === "txt" ? <Spinner /> : null}
+                  Plain Text (.txt)
+                </button>
+                <button
+                  onClick={() => { onExport("ews"); setShowExport(false); }}
                   disabled={exporting !== null}
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >
@@ -158,10 +262,7 @@ export default function ControlPanel({
                   EasyWorship (.ews)
                 </button>
                 <button
-                  onClick={() => {
-                    onExport("pro");
-                    setShowExport(false);
-                  }}
+                  onClick={() => { onExport("pro"); setShowExport(false); }}
                   disabled={exporting !== null}
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >
@@ -169,10 +270,7 @@ export default function ControlPanel({
                   ProPresenter (.pro)
                 </button>
                 <button
-                  onClick={() => {
-                    onExport("pptx");
-                    setShowExport(false);
-                  }}
+                  onClick={() => { onExport("pptx"); setShowExport(false); }}
                   disabled={exporting !== null}
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >

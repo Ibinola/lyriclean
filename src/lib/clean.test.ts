@@ -3,10 +3,12 @@ import { cleanLyrics, applyLineBreaks } from "./clean";
 
 describe("cleanLyrics", () => {
   it("returns empty result for empty input", () => {
-    expect(cleanLyrics("")).toEqual({ text: "", sections: [] });
-    expect(cleanLyrics("   ")).toEqual({ text: "", sections: [] });
-    expect(cleanLyrics(null as unknown as string)).toEqual({ text: "", sections: [] });
-    expect(cleanLyrics(undefined as unknown as string)).toEqual({ text: "", sections: [] });
+    for (const val of ["", "   ", null as unknown as string, undefined as unknown as string]) {
+      const r = cleanLyrics(val);
+      expect(r.text).toBe("");
+      expect(r.sections).toEqual([]);
+      expect(r.report.totalLinesBefore).toBe(0);
+    }
   });
 
   it("strips ANSI escape codes", () => {
