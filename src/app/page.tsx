@@ -9,6 +9,7 @@ import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
 import { expandReferences } from "@/lib/expandSections";
 import { spellcheck } from "@/lib/spellcheck";
 import { detectDuplicates, type DuplicateGroup } from "@/lib/detectDuplicates";
+import { useToast } from "@/components/Toaster";
 import {
   exportEasyWorship,
   exportProPresenter,
@@ -23,7 +24,10 @@ export default function Home() {
   const [foundSections, setFoundSections] = useState<string[]>([]);
   const [showSearch, setShowSearch] = useState(false);
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
+  const [cleaning, setCleaning] = useState(false);
+  const [exporting, setExporting] = useState<"ews" | "pro" | "pptx" | null>(null);
   const baseTextRef = useRef("");
+  const { toast } = useToast();
   const findInputRef = useRef<HTMLInputElement>(null);
 
   const rawLines = rawLyrics
@@ -48,6 +52,8 @@ export default function Home() {
   );
 
   const handleClean = useCallback(() => {
+    if (!rawLyrics.trim()) return;
+    setCleaning(true);
     const expanded = expandReferences(rawLyrics);
     const checked = spellcheck(expanded);
     const result = cleanLyrics(checked);
@@ -56,16 +62,23 @@ export default function Home() {
     setFoundSections(result.sections);
     setDuplicates(detectDuplicates(result.text));
     applyFormatting(result.text);
-  }, [rawLyrics, applyFormatting]);
+    setCleaning(false);
+    if (!result.text.trim()) {
+      toast("No lyrics remained after cleaning", "info");
+    } else {
+      toast(`Cleaned to ${result.sections.length} sections`, "success");
+    }
+  }, [rawLyrics, applyFormatting, toast]);
 
   const handleCopy = useCallback(async () => {
     if (!displayedLyrics) return;
     try {
       await navigator.clipboard.writeText(displayedLyrics);
+      toast("Copied to clipboard", "success");
     } catch {
-      // fallback
+      toast("Failed to copy", "error");
     }
-  }, [displayedLyrics]);
+  }, [displayedLyrics, toast]);
 
   const handleReplace = (find: string, replace: string) => {
     if (!baseTextRef.current) return;
@@ -128,36 +141,44 @@ export default function Home() {
 
   const handleExport = async (format: "ews" | "pro" | "pptx") => {
     if (!displayedLyrics) return;
+    setExporting(format);
     const slides = displayedLyrics.split("\n\n").filter(Boolean);
     const title = "Song";
 
-    switch (format) {
-      case "ews": {
-        const xml = exportEasyWorship(slides, title);
-        const blob = new Blob([xml], { type: "application/xml" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${title}.ews`;
-        a.click();
-        URL.revokeObjectURL(url);
-        break;
+    try {
+      switch (format) {
+        case "ews": {
+          const xml = exportEasyWorship(slides, title);
+          const blob = new Blob([xml], { type: "application/xml" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${title}.ews`;
+          a.click();
+          URL.revokeObjectURL(url);
+          break;
+        }
+        case "pro": {
+          const text = exportProPresenter(slides);
+          const blob = new Blob([text], { type: "text/plain" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${title}.pro`;
+          a.click();
+          URL.revokeObjectURL(url);
+          break;
+        }
+        case "pptx": {
+          await exportPowerPoint(slides, title);
+          break;
+        }
       }
-      case "pro": {
-        const text = exportProPresenter(slides);
-        const blob = new Blob([text], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${title}.pro`;
-        a.click();
-        URL.revokeObjectURL(url);
-        break;
-      }
-      case "pptx": {
-        await exportPowerPoint(slides, title);
-        break;
-      }
+      toast("Exported successfully", "success");
+    } catch {
+      toast("Export failed", "error");
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -172,8 +193,9 @@ export default function Home() {
       setFoundSections(result.sections);
       setDuplicates(detectDuplicates(result.text));
       applyFormatting(result.text);
+      toast(`Loaded "${title}" by ${artist}`, "success");
     },
-    [applyFormatting],
+    [applyFormatting, toast],
   );
 
   const handleInputChange = (val: string) => {
@@ -250,6 +272,8 @@ export default function Home() {
           showSearch={showSearch}
           onShowSearchChange={setShowSearch}
           findInputRef={findInputRef}
+          cleaning={cleaning}
+          exporting={exporting}
         />
       </main>
 

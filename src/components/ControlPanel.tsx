@@ -23,6 +23,8 @@ interface ControlPanelProps {
   onShowSearchChange: (val: boolean) => void;
   findInputRef: React.RefObject<HTMLInputElement | null>;
   duplicates: number;
+  cleaning: boolean;
+  exporting: "ews" | "pro" | "pptx" | null;
 }
 
 export default function ControlPanel({
@@ -42,6 +44,8 @@ export default function ControlPanel({
   onShowSearchChange,
   findInputRef,
   duplicates,
+  cleaning,
+  exporting,
 }: ControlPanelProps) {
   const [findText, setFindText] = useState("");
   const [replaceText, setReplaceText] = useState("");
@@ -102,8 +106,9 @@ export default function ControlPanel({
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-2">
-        <Button id="clean-btn" onClick={onClean} className="bg-indigo-600 hover:bg-indigo-700">
-          &#10003; Clean Lyrics
+        <Button id="clean-btn" onClick={onClean} disabled={cleaning} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60">
+          {cleaning ? <Spinner /> : null}
+          {cleaning ? " Cleaning..." : "\u2713 Clean Lyrics"}
         </Button>
         <Button
           onClick={handleCopy}
@@ -123,10 +128,11 @@ export default function ControlPanel({
           <Button
             id="export-btn"
             onClick={() => setShowExport(!showExport)}
-            disabled={!hasOutput}
+            disabled={!hasOutput || exporting !== null}
             variant="secondary"
           >
-            &#8595; Export
+            {exporting ? <Spinner /> : null}
+            {exporting ? " Exporting..." : "\u2195 Export"}
           </Button>
           {showExport && (
             <>
@@ -134,23 +140,29 @@ export default function ControlPanel({
                 className="fixed inset-0 z-10"
                 onClick={() => setShowExport(false)}
               />
-              <div className="absolute bottom-full left-0 z-20 mb-1 w-44 overflow-hidden rounded-lg border bg-card shadow-lg">
+              <div className="absolute bottom-full left-0 z-20 mb-1 w-52 overflow-hidden rounded-lg border bg-card shadow-lg">
                 <button
                   onClick={() => { onExport("ews"); setShowExport(false); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                  disabled={exporting !== null}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >
+                  {exporting === "ews" ? <Spinner /> : null}
                   EasyWorship (.ews)
                 </button>
                 <button
                   onClick={() => { onExport("pro"); setShowExport(false); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                  disabled={exporting !== null}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >
+                  {exporting === "pro" ? <Spinner /> : null}
                   ProPresenter (.pro)
                 </button>
                 <button
                   onClick={() => { onExport("pptx"); setShowExport(false); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                  disabled={exporting !== null}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >
+                  {exporting === "pptx" ? <Spinner /> : null}
                   PowerPoint (.pptx)
                 </button>
               </div>
@@ -252,5 +264,14 @@ export default function ControlPanel({
         )}
       </div>
     </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
   );
 }
