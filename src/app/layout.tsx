@@ -27,6 +27,16 @@ export const metadata: Metadata = {
     title: "lyriclean — Clean Lyrics, Clear Worship",
     description:
       "Turn raw song lyrics into presentation-ready slides. Free, open-source lyric preparation tool for worship teams.",
+    url: "https://lyriclean.vercel.app",
+    siteName: "lyriclean",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "lyriclean — Clean Lyrics, Clear Worship",
+    description:
+      "Turn raw song lyrics into presentation-ready slides. Free, open-source lyric preparation tool for worship teams.",
+    images: ["/og-image.png"],
   },
 };
 
