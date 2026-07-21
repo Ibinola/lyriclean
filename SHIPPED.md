@@ -1,5 +1,22 @@
 # Shipping Log
 
+## [v0.7] — 2026-07-21 — Prettier, CI, A11y, Spellcheck cleanup
+
+| Area | Change |
+|------|--------|
+| **Prettier** | `.prettierrc` + `.prettierignore` + `npm run format` script, full source format pass |
+| **CI/CD** | GitHub Actions workflow: `npm ci` → `npm run lint` → `npm test` → `npm run build` on push/PR |
+| **A11y** | `role="list"`, `role="listitem"`, `aria-roledescription="sortable slide"`, `aria-label` on slides/drag handles, `role="textbox"` on contentEditable, `aria-hidden` on decorative SVGs |
+| **Spellcheck** | Removed 6 duplicate map entries and the correct-spelling entry `praise` |
+
+### Files
+- `.prettierrc`, `.prettierignore` — new
+- `.github/workflows/ci.yml` — new
+- `src/components/SortableSections.tsx` — a11y attributes
+- `src/lib/spellcheck.ts` — deduped
+
+---
+
 ## [v0.6] — 2026-07-21 — Changelog UI
 
 | Area | Change |
