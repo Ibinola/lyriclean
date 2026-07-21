@@ -1,5 +1,18 @@
 # Shipping Log
 
+## [v0.6] — 2026-07-21 — Changelog UI
+
+| Area | Change |
+|------|--------|
+| **Changelog modal** | "What's New" dialog in footer showing release notes from v0.1–v0.5 |
+| **Data source** | Release data hardcoded in component, links to SHIPPED.md on GitHub |
+
+### Files
+- `src/components/Changelog.tsx` — new
+- `src/app/page.tsx` — Changelog component added to footer
+
+---
+
 ## [v0.5] — 2026-07-21 — Error Boundary, Toasts, Loading States
 
 | Area | Change |

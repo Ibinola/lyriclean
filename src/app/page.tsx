@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import LyricEditor from "@/components/LyricEditor";
 import ControlPanel from "@/components/ControlPanel";
 import OnboardingTour from "@/components/OnboardingTour";
+import Changelog from "@/components/Changelog";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
 import { expandReferences } from "@/lib/expandSections";
 import { spellcheck } from "@/lib/spellcheck";
@@ -287,7 +288,8 @@ export default function Home() {
         >
           Open source
         </a>{" "}
-        &middot; Free forever
+        &middot; Free forever{" "}
+        &middot; <Changelog />
       </footer>
     </div>
   );
