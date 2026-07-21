@@ -1,5 +1,14 @@
 # Shipping Log
 
+## [v0.8] — 2026-07-21 — ESLint fix + CI green
+
+| Area | Change |
+|------|--------|
+| **ESLint** | Rewrote `eslint.config.mjs` to use `FlatCompat` from `@eslint/eslintrc` — previous config was silently broken |
+| **CI** | Lint now passes with 0 errors (was 8103 false positives from `.next/types/` + non-working config) |
+
+---
+
 ## [v0.7] — 2026-07-21 — Prettier, CI, A11y, Spellcheck cleanup
 
 | Area | Change |
