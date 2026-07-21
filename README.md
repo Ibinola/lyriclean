@@ -6,6 +6,8 @@ Turn raw song lyrics into presentation-ready slides in seconds. Built for worshi
 
 [lyriclean.vercel.app](https://lyriclean.vercel.app) → Paste → Clean → Export
 
+![LyriClean demo](public/demo/lyriclean-demo.gif)
+
 ## Usage
 
 - **`/`** — Landing page with live demo of the cleaning pipeline
