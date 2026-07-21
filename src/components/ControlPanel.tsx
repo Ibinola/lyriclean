@@ -118,6 +118,9 @@ export default function ControlPanel({
           {cleaning ? <Spinner /> : null}
           {cleaning ? " Cleaning..." : "\u2713 Clean Lyrics"}
         </Button>
+        <kbd className="hidden items-center rounded-md border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm sm:inline-flex">
+          ⌘+Enter
+        </kbd>
         <Button
           onClick={handleCopy}
           disabled={!hasOutput}
@@ -142,7 +145,7 @@ export default function ControlPanel({
           {showExport && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowExport(false)} />
-              <div className="absolute bottom-full left-0 z-20 mb-1 w-52 overflow-hidden rounded-lg border bg-card shadow-lg">
+              <div className="absolute bottom-full left-0 z-20 mb-1 w-52 overflow-hidden rounded-lg border bg-card shadow-lg max-sm:bottom-auto max-sm:top-full max-sm:mb-0 max-sm:mt-1">
                 <button
                   onClick={() => {
                     onExport("ews");

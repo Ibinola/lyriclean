@@ -6,6 +6,7 @@ import LyricEditor from "@/components/LyricEditor";
 import ControlPanel from "@/components/ControlPanel";
 import OnboardingTour from "@/components/OnboardingTour";
 import Changelog from "@/components/Changelog";
+import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
 import { expandReferences } from "@/lib/expandSections";
 import { spellcheck } from "@/lib/spellcheck";
@@ -272,8 +273,8 @@ export default function Home() {
         />
       </main>
 
-      <footer className="border-t px-4 py-5 text-center text-xs text-muted-foreground">
-        Built for worship teams, everywhere.{" "}
+      <footer className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t px-4 py-5 text-center text-xs text-muted-foreground">
+        <span>Built for worship teams, everywhere.</span>
         <a
           href="https://github.com/Ibinola/lyriclean"
           target="_blank"
@@ -281,8 +282,13 @@ export default function Home() {
           className="text-indigo-600 hover:underline"
         >
           Open source
-        </a>{" "}
-        &middot; Free forever &middot; <Changelog />
+        </a>
+        <span className="hidden sm:inline">&middot;</span>
+        <span>Free forever</span>
+        <span className="hidden sm:inline">&middot;</span>
+        <Changelog />
+        <span className="hidden sm:inline">&middot;</span>
+        <KeyboardShortcuts />
       </footer>
     </div>
   );
