@@ -49,7 +49,7 @@ export function expandReferences(raw: string): string {
 
   // Second pass: replace references
   const refPattern = new RegExp(
-    `^[\\[\\\(]\\s*(${labels.join("|")})\\s*[\\]\\)]\\s*$`,
+    `^[\\[\\\(]\\s*(${labels.map((l) => l + "(?:\\s*\\d+)?").join("|")})\\s*[\\]\\)]\\s*$`,
     "im",
   );
 
