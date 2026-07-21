@@ -1,12 +1,42 @@
 const instructionWords = new Set([
-  "repeat", "refrain", "interlude", "instrumental", "chants",
-  "lead", "bgv", "unison", "harmony",
+  "repeat",
+  "refrain",
+  "interlude",
+  "instrumental",
+  "chants",
+  "lead",
+  "bgv",
+  "unison",
+  "harmony",
 ]);
 
 const noiseWords = new Set([
-  "a", "an", "the", "and", "or", "but", "in", "on", "at", "to",
-  "for", "of", "with", "by", "from", "into", "through", "like",
-  "things", "as", "if", "so", "than", "then", "just", "very",
+  "a",
+  "an",
+  "the",
+  "and",
+  "or",
+  "but",
+  "in",
+  "on",
+  "at",
+  "to",
+  "for",
+  "of",
+  "with",
+  "by",
+  "from",
+  "into",
+  "through",
+  "like",
+  "things",
+  "as",
+  "if",
+  "so",
+  "than",
+  "then",
+  "just",
+  "very",
 ]);
 
 function removeEmoji(str: string): string {
@@ -20,7 +50,12 @@ function removeEmoji(str: string): string {
 
 function isFillerLine(trimmed: string): boolean {
   const lower = trimmed.toLowerCase();
-  if (/^[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|interlude|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?$/.test(lower)) return true;
+  if (
+    /^[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|interlude|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?$/.test(
+      lower,
+    )
+  )
+    return true;
   if (/^\(sung\s+in\s+\w+\)$/i.test(trimmed)) return true;
   if (/^\[.*?\]$/.test(trimmed) && /[?]/.test(trimmed)) return true;
   if (/^Repeat:\s/i.test(trimmed)) return true;

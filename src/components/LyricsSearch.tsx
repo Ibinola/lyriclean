@@ -47,7 +47,10 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.preventDefault(); onClose(); }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -136,7 +139,10 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] sm:pt-[15vh]" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] sm:pt-[15vh]"
+      onClick={onClose}
+    >
       <div className="fixed inset-0 bg-black/40" />
       <div
         className="relative z-10 mx-4 w-full max-w-2xl rounded-xl border bg-card shadow-2xl"
@@ -145,10 +151,25 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h2 className="flex items-center gap-2 text-sm font-semibold">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
             Search Lyrics
           </h2>
-          <button onClick={onClose} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <button
+            onClick={onClose}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
             &#x2715;
           </button>
         </div>
@@ -159,7 +180,10 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
           {(step === "idle" || step === "results") && (
             <div className="flex items-end gap-2">
               <div className="flex-1">
-                <label htmlFor="modal-song" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <label
+                  htmlFor="modal-song"
+                  className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
                   Type in the lyrics you heard
                 </label>
                 <Input
@@ -182,22 +206,43 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
                 disabled={!song.trim()}
                 className="h-10 w-10 shrink-0 rounded-full bg-indigo-600 p-0 hover:bg-indigo-700"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
               </Button>
             </div>
           )}
 
           {/* Error */}
-          {error && (
-            <p className="mt-2 text-xs text-red-500">{error}</p>
-          )}
+          {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
 
           {/* Searching spinner */}
           {step === "searching" && (
             <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
               <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               Searching...
             </div>
@@ -207,8 +252,19 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
           {step === "fetching" && (
             <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
               <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               Fetching lyrics...
             </div>
@@ -247,13 +303,28 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
                               />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                                <svg
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                >
+                                  <circle cx="12" cy="12" r="10" />
+                                  <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                                  <path d="M12 17h.01" />
+                                </svg>
                               </div>
                             )}
                           </div>
                           <div className="flex min-w-0 flex-col gap-0.5 p-2">
-                            <span className="truncate text-xs font-medium text-foreground">{r.title}</span>
-                            <span className="truncate text-[11px] text-muted-foreground">{r.artist}</span>
+                            <span className="truncate text-xs font-medium text-foreground">
+                              {r.title}
+                            </span>
+                            <span className="truncate text-[11px] text-muted-foreground">
+                              {r.artist}
+                            </span>
                           </div>
                         </button>
                       ))}
@@ -271,7 +342,16 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
                 onClick={handleBack}
                 className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
                 Back to results
               </button>
 
@@ -289,7 +369,11 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
                 </div>
                 {fetchSource && (
                   <span className="shrink-0 self-start rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                    {fetchSource === "genius" ? "Genius" : fetchSource === "lrclib" ? "LRCLIB" : "AGL"}
+                    {fetchSource === "genius"
+                      ? "Genius"
+                      : fetchSource === "lrclib"
+                        ? "LRCLIB"
+                        : "AGL"}
                   </span>
                 )}
               </div>
@@ -302,7 +386,20 @@ export default function LyricsSearch({ isOpen, onClose, onLyricsFound }: LyricsS
                 onClick={handleUseLyrics}
                 className="w-full bg-indigo-600 hover:bg-indigo-700"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" x2="12" y1="15" y2="3" />
+                </svg>
                 Use These Lyrics
               </Button>
             </div>

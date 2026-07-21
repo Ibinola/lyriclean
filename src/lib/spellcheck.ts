@@ -39,10 +39,8 @@ const corrections = new Map([
   // Resurrection
   ["resurection", "Resurrection"],
   ["resurrection", "Resurrection"],
-  ["resurection", "Resurrection"],
 
   // Crucifixion
-  ["crucifiction", "Crucifixion"],
   ["crucifiction", "Crucifixion"],
 
   // Worship
@@ -53,7 +51,6 @@ const corrections = new Map([
 
   // Praise
   ["praize", "Praise"],
-  ["praise", "Praise"],
   ["praiise", "Praise"],
 
   // Glory
@@ -98,7 +95,6 @@ const corrections = new Map([
   ["evertything", "Everything"],
   ["spirit", "Spirit"],
   ["spirtual", "Spiritual"],
-  ["spirtual", "Spiritual"],
   ["anointed", "Anointed"],
   ["anointing", "Anointing"],
   ["annointed", "Anointed"],
@@ -113,9 +109,7 @@ const corrections = new Map([
   ["throneroom", "Throne Room"],
   ["foreva", "Forever"],
   ["4ever", "Forever"],
-  ["foreva", "Forever"],
   ["savior", "Savior"],
-  ["saviour", "Savior"],
   ["saviour", "Savior"],
   ["sactified", "Sanctified"],
   ["sanctified", "Sanctified"],
@@ -144,8 +138,7 @@ export function spellcheck(text: string): string {
 
       // Preserve original casing
       if (token === token.toUpperCase()) return correct.toUpperCase();
-      if (token[0] === token[0].toUpperCase())
-        return correct[0].toUpperCase() + correct.slice(1);
+      if (token[0] === token[0].toUpperCase()) return correct[0].toUpperCase() + correct.slice(1);
       return correct.toLowerCase();
     })
     .join("");

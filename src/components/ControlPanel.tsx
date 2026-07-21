@@ -67,7 +67,10 @@ export default function ControlPanel({
   return (
     <div className="space-y-3">
       {/* Lines per slide */}
-      <div id="lines-control" className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm flex-wrap">
+      <div
+        id="lines-control"
+        className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm flex-wrap"
+      >
         <Label
           htmlFor="linesPerBreak"
           className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
@@ -106,7 +109,12 @@ export default function ControlPanel({
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-2">
-        <Button id="clean-btn" onClick={onClean} disabled={cleaning} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60">
+        <Button
+          id="clean-btn"
+          onClick={onClean}
+          disabled={cleaning}
+          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60"
+        >
           {cleaning ? <Spinner /> : null}
           {cleaning ? " Cleaning..." : "\u2713 Clean Lyrics"}
         </Button>
@@ -118,10 +126,7 @@ export default function ControlPanel({
         >
           {copied ? "\u2713 Copied!" : "\u{1F4CB} Copy to Clipboard"}
         </Button>
-        <Button
-          onClick={() => onShowSearchChange(!showSearch)}
-          variant="secondary"
-        >
+        <Button onClick={() => onShowSearchChange(!showSearch)} variant="secondary">
           &#128270; Search &amp; Replace
         </Button>
         <div className="relative" ref={exportRef}>
@@ -136,13 +141,13 @@ export default function ControlPanel({
           </Button>
           {showExport && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowExport(false)}
-              />
+              <div className="fixed inset-0 z-10" onClick={() => setShowExport(false)} />
               <div className="absolute bottom-full left-0 z-20 mb-1 w-52 overflow-hidden rounded-lg border bg-card shadow-lg">
                 <button
-                  onClick={() => { onExport("ews"); setShowExport(false); }}
+                  onClick={() => {
+                    onExport("ews");
+                    setShowExport(false);
+                  }}
                   disabled={exporting !== null}
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >
@@ -150,7 +155,10 @@ export default function ControlPanel({
                   EasyWorship (.ews)
                 </button>
                 <button
-                  onClick={() => { onExport("pro"); setShowExport(false); }}
+                  onClick={() => {
+                    onExport("pro");
+                    setShowExport(false);
+                  }}
                   disabled={exporting !== null}
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >
@@ -158,7 +166,10 @@ export default function ControlPanel({
                   ProPresenter (.pro)
                 </button>
                 <button
-                  onClick={() => { onExport("pptx"); setShowExport(false); }}
+                  onClick={() => {
+                    onExport("pptx");
+                    setShowExport(false);
+                  }}
                   disabled={exporting !== null}
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted disabled:opacity-50"
                 >
@@ -271,7 +282,11 @@ function Spinner() {
   return (
     <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
     </svg>
   );
 }

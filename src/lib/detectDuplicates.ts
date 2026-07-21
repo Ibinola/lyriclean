@@ -27,16 +27,13 @@ function jaccardSimilarity(a: string[], b: string[]): number {
 function contentHash(text: string): string {
   let h = 0;
   for (let i = 0; i < text.length; i++) {
-    h = ((h << 5) - h) + text.charCodeAt(i);
+    h = (h << 5) - h + text.charCodeAt(i);
     h |= 0;
   }
   return `h${Math.abs(h)}`;
 }
 
-export function detectDuplicates(
-  text: string,
-  threshold = 0.75,
-): DuplicateGroup[] {
+export function detectDuplicates(text: string, threshold = 0.75): DuplicateGroup[] {
   const paragraphs = text.split("\n\n").filter(Boolean);
   const sectionPattern =
     /^(Verse\s*\d*|Chorus(?:\s+\d+)?|Bridge(?:\s+\d+)?|Intro(?:\s+\d+)?|Outro(?:\s+\d+)?|Pre-Chorus|Refrain|Hook|Tag|Interlude|Chants|Instrumental(?:\s+\d+)?)$/i;

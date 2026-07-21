@@ -4,10 +4,9 @@ async function searchGenius(query: string) {
   const apiKey = process.env.GENIUS_API_KEY;
   if (!apiKey) return [];
 
-  const res = await fetch(
-    `https://api.genius.com/search?q=${encodeURIComponent(query)}`,
-    { headers: { Authorization: `Bearer ${apiKey}` } },
-  );
+  const res = await fetch(`https://api.genius.com/search?q=${encodeURIComponent(query)}`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
 
   if (!res.ok || res.status === 429) return [];
 
@@ -25,10 +24,9 @@ async function searchGenius(query: string) {
 }
 
 async function searchLRCLIB(query: string) {
-  const res = await fetch(
-    `https://lrclib.net/api/search?q=${encodeURIComponent(query)}`,
-    { headers: { "User-Agent": "lyriclean/1.0" } },
-  );
+  const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`, {
+    headers: { "User-Agent": "lyriclean/1.0" },
+  });
 
   if (!res.ok) return [];
 

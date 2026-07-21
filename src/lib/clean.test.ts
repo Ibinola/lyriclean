@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  cleanLyrics,
-  applyLineBreaks,
-} from "./clean";
+import { cleanLyrics, applyLineBreaks } from "./clean";
 
 describe("cleanLyrics", () => {
   it("returns empty result for empty input", () => {

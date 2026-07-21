@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 function slideId(slide: string): string {
   let h = 0;
   for (let i = 0; i < slide.length; i++) {
-    h = ((h << 5) - h) + slide.charCodeAt(i);
+    h = (h << 5) - h + slide.charCodeAt(i);
     h |= 0;
   }
   return "s" + Math.abs(h);
@@ -35,14 +35,9 @@ interface SortableSlideProps {
 
 function SortableSlide({ slide, index, onEdit }: SortableSlideProps) {
   const id = slideId(slide);
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
   const textRef = useRef<HTMLDivElement>(null);
   const isLocalEdit = useRef(false);
 
@@ -63,15 +58,19 @@ function SortableSlide({ slide, index, onEdit }: SortableSlideProps) {
     <div
       ref={setNodeRef}
       style={style}
+      role="listitem"
+      aria-roledescription="sortable slide"
+      aria-label={`Slide ${index + 1}`}
       className="flex gap-2 rounded-lg border bg-card px-3 py-2.5 transition-colors hover:border-border"
     >
       <button
         className="mt-0.5 flex shrink-0 cursor-grab touch-none items-center text-muted-foreground transition-colors hover:text-foreground active:cursor-grabbing"
         {...attributes}
         {...listeners}
-        aria-label="Drag to reorder"
+        aria-label={`Drag to reorder slide ${index + 1}`}
+        aria-describedby={`slide-content-${id}`}
       >
-        <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor">
+        <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
           <circle cx="4" cy="2" r="1.2" />
           <circle cx="8" cy="2" r="1.2" />
           <circle cx="4" cy="6" r="1.2" />
@@ -85,6 +84,10 @@ function SortableSlide({ slide, index, onEdit }: SortableSlideProps) {
         contentEditable
         suppressContentEditableWarning
         spellCheck={false}
+        role="textbox"
+        aria-label={`Slide ${index + 1} content`}
+        aria-multiline="true"
+        id={`slide-content-${id}`}
         onInput={() => {
           isLocalEdit.current = true;
           onEdit(index, textRef.current?.textContent || "");
@@ -128,23 +131,11 @@ export default function SortableSections({
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={slides.map((s) => slideId(s))}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="flex flex-col gap-2">
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={slides.map((s) => slideId(s))} strategy={verticalListSortingStrategy}>
+        <div role="list" aria-label="Song slides" className="flex flex-col gap-2">
           {slides.map((slide, i) => (
-            <SortableSlide
-              key={i}
-              slide={slide}
-              index={i}
-              onEdit={onEditSlide || (() => {})}
-            />
+            <SortableSlide key={i} slide={slide} index={i} onEdit={onEditSlide || (() => {})} />
           ))}
         </div>
       </SortableContext>

@@ -1,9 +1,5 @@
 import { removeEmoji, isFillerLine } from "./fillerDetection";
-import {
-  matchesSectionLabel,
-  normalizeSectionLabel,
-  extractBracketedLabel,
-} from "./sectionLabels";
+import { matchesSectionLabel, normalizeSectionLabel, extractBracketedLabel } from "./sectionLabels";
 
 function stripANSI(str: string): string {
   return str.replace(/\x1b\[[\d;]*[a-zA-Z]/g, "");
@@ -66,10 +62,7 @@ export function cleanLyrics(raw: string): CleanResult {
     if (hasXNumber) {
       trimmed = trimmed.replace(/\s*(?:lead|bgv|unison|harmony)\s*$/i, "");
     }
-    trimmed = trimmed.replace(
-      /\s*[\[\(]?\s*(?:\d+\s*x\s*\d*|x\d+)\s*[\]\)]?\s*$/i,
-      "",
-    );
+    trimmed = trimmed.replace(/\s*[\[\(]?\s*(?:\d+\s*x\s*\d*|x\d+)\s*[\]\)]?\s*$/i, "");
 
     trimmed = trimmed.replace(/^\s*\d+[.)]\s*/, "");
     trimmed = trimmed.replace(/^\s*[-•·‣⁃]\s*/, "");

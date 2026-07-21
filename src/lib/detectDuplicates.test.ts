@@ -13,9 +13,7 @@ describe("detectDuplicates", () => {
   });
 
   it("detects identical sections", () => {
-    const text =
-      "Chorus\nPraise the Lord\nHallelujah\n\n" +
-      "Chorus\nPraise the Lord\nHallelujah";
+    const text = "Chorus\nPraise the Lord\nHallelujah\n\n" + "Chorus\nPraise the Lord\nHallelujah";
     const results = detectDuplicates(text);
     expect(results).toHaveLength(1);
     expect(results[0].similarity).toBe(1);
@@ -34,16 +32,14 @@ describe("detectDuplicates", () => {
 
   it("does not flag distinct sections", () => {
     const text =
-      "Verse 1\nAmazing grace\nHow sweet the sound\n\n" +
-      "Chorus\nPraise the Lord\nHallelujah";
+      "Verse 1\nAmazing grace\nHow sweet the sound\n\n" + "Chorus\nPraise the Lord\nHallelujah";
     expect(detectDuplicates(text)).toEqual([]);
   });
 
   it("respects custom threshold", () => {
     // 3 of 5 lines shared => 0.6 similarity
     const text =
-      "Verse 1\nLine 1\nLine 2\nLine 3\nLine 4\n\n" +
-      "Chorus\nLine 1\nLine 2\nLine 3\nDifferent";
+      "Verse 1\nLine 1\nLine 2\nLine 3\nLine 4\n\n" + "Chorus\nLine 1\nLine 2\nLine 3\nDifferent";
     const strict = detectDuplicates(text, 0.9);
     expect(strict).toEqual([]);
     const loose = detectDuplicates(text, 0.5);
@@ -51,43 +47,31 @@ describe("detectDuplicates", () => {
   });
 
   it("ignores casing in comparison", () => {
-    const text =
-      "Chorus\nPraise the Lord\n\n" +
-      "Chorus\nPRAISE THE LORD";
+    const text = "Chorus\nPraise the Lord\n\n" + "Chorus\nPRAISE THE LORD";
     const results = detectDuplicates(text);
     expect(results).toHaveLength(1);
   });
 
   it("detects duplicates with numbered headers", () => {
-    const text =
-      "Chorus\nPraise the Lord\n\n" +
-      "Chorus 2\nPraise the Lord";
+    const text = "Chorus\nPraise the Lord\n\n" + "Chorus 2\nPraise the Lord";
     const results = detectDuplicates(text);
     expect(results).toHaveLength(1);
   });
 
   it("handles sections without headers", () => {
-    const text =
-      "Line A\nLine B\n\n" +
-      "Line A\nLine B";
+    const text = "Line A\nLine B\n\n" + "Line A\nLine B";
     const results = detectDuplicates(text);
     expect(results).toHaveLength(1);
     expect(results[0].aHeader).toBe("");
   });
 
   it("does not pair sections with itself", () => {
-    const text =
-      "Chorus\nPraise\n\n" +
-      "Verse\nDifferent\n\n" +
-      "Bridge\nAlso different";
+    const text = "Chorus\nPraise\n\n" + "Verse\nDifferent\n\n" + "Bridge\nAlso different";
     expect(detectDuplicates(text)).toEqual([]);
   });
 
   it("returns correct indices in the original paragraph list", () => {
-    const text =
-      "Chorus\nPraise\n\n" +
-      "Verse\nDifferent\n\n" +
-      "Chorus\nPraise";
+    const text = "Chorus\nPraise\n\n" + "Verse\nDifferent\n\n" + "Chorus\nPraise";
     const results = detectDuplicates(text);
     expect(results[0].aIndex).toBe(0);
     expect(results[0].bIndex).toBe(2);

@@ -1,9 +1,6 @@
 export function exportEasyWorship(slides: string[], title = "Song"): string {
   const slideXml = slides
-    .map(
-      (slide) =>
-        `    <Slide>\n      <Lines>${escapeXml(slide)}</Lines>\n    </Slide>`,
-    )
+    .map((slide) => `    <Slide>\n      <Lines>${escapeXml(slide)}</Lines>\n    </Slide>`)
     .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -17,10 +14,7 @@ export function exportProPresenter(slides: string[]): string {
   return slides.map((slide) => `[Slide]\n${slide}`).join("\n\n");
 }
 
-export async function exportPowerPoint(
-  slides: string[],
-  title = "Song",
-): Promise<void> {
+export async function exportPowerPoint(slides: string[], title = "Song"): Promise<void> {
   const pptxgen = (await import("pptxgenjs")).default;
   const pres = new pptxgen();
   pres.defineLayout({ name: "CUSTOM", width: 10, height: 5.625 });

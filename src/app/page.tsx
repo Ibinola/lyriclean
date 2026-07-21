@@ -11,11 +11,7 @@ import { expandReferences } from "@/lib/expandSections";
 import { spellcheck } from "@/lib/spellcheck";
 import { detectDuplicates, type DuplicateGroup } from "@/lib/detectDuplicates";
 import { useToast } from "@/components/Toaster";
-import {
-  exportEasyWorship,
-  exportProPresenter,
-  exportPowerPoint,
-} from "@/lib/export";
+import { exportEasyWorship, exportProPresenter, exportPowerPoint } from "@/lib/export";
 
 export default function Home() {
   const [rawLyrics, setRawLyrics] = useState("");
@@ -31,18 +27,10 @@ export default function Home() {
   const { toast } = useToast();
   const findInputRef = useRef<HTMLInputElement>(null);
 
-  const rawLines = rawLyrics
-    ? rawLyrics.split("\n").filter(Boolean).length
-    : 0;
-  const cleanedLines = cleanedLyrics
-    ? cleanedLyrics.split("\n").filter(Boolean).length
-    : 0;
-  const slideCount = displayedLyrics
-    ? displayedLyrics.split("\n\n").filter(Boolean).length
-    : 0;
-  const slideList = displayedLyrics
-    ? displayedLyrics.split("\n\n").filter(Boolean)
-    : [];
+  const rawLines = rawLyrics ? rawLyrics.split("\n").filter(Boolean).length : 0;
+  const cleanedLines = cleanedLyrics ? cleanedLyrics.split("\n").filter(Boolean).length : 0;
+  const slideCount = displayedLyrics ? displayedLyrics.split("\n\n").filter(Boolean).length : 0;
+  const slideList = displayedLyrics ? displayedLyrics.split("\n\n").filter(Boolean) : [];
 
   const applyFormatting = useCallback(
     (baseText: string) => {
@@ -101,29 +89,35 @@ export default function Home() {
     }
   };
 
-  const handleDuplicateRemove = useCallback((paraIndex: number) => {
-    const paras = baseTextRef.current.split("\n\n");
-    if (paraIndex < 0 || paraIndex >= paras.length) return;
-    paras.splice(paraIndex, 1);
-    const newText = paras.join("\n\n").trim();
-    baseTextRef.current = newText;
-    setCleanedLyrics(newText);
-    setDuplicates(detectDuplicates(newText));
-    applyFormatting(newText);
-  }, [applyFormatting]);
+  const handleDuplicateRemove = useCallback(
+    (paraIndex: number) => {
+      const paras = baseTextRef.current.split("\n\n");
+      if (paraIndex < 0 || paraIndex >= paras.length) return;
+      paras.splice(paraIndex, 1);
+      const newText = paras.join("\n\n").trim();
+      baseTextRef.current = newText;
+      setCleanedLyrics(newText);
+      setDuplicates(detectDuplicates(newText));
+      applyFormatting(newText);
+    },
+    [applyFormatting],
+  );
 
-  const handleDuplicateRename = useCallback((paraIndex: number, newHeader: string) => {
-    const paras = baseTextRef.current.split("\n\n");
-    if (paraIndex < 0 || paraIndex >= paras.length) return;
-    const lines = paras[paraIndex].split("\n");
-    lines[0] = newHeader;
-    paras[paraIndex] = lines.join("\n");
-    const newText = paras.join("\n\n").trim();
-    baseTextRef.current = newText;
-    setCleanedLyrics(newText);
-    setDuplicates(detectDuplicates(newText));
-    applyFormatting(newText);
-  }, [applyFormatting]);
+  const handleDuplicateRename = useCallback(
+    (paraIndex: number, newHeader: string) => {
+      const paras = baseTextRef.current.split("\n\n");
+      if (paraIndex < 0 || paraIndex >= paras.length) return;
+      const lines = paras[paraIndex].split("\n");
+      lines[0] = newHeader;
+      paras[paraIndex] = lines.join("\n");
+      const newText = paras.join("\n\n").trim();
+      baseTextRef.current = newText;
+      setCleanedLyrics(newText);
+      setDuplicates(detectDuplicates(newText));
+      applyFormatting(newText);
+    },
+    [applyFormatting],
+  );
 
   const handleOutputChange = (val: string) => {
     setDisplayedLyrics(val);
@@ -288,8 +282,7 @@ export default function Home() {
         >
           Open source
         </a>{" "}
-        &middot; Free forever{" "}
-        &middot; <Changelog />
+        &middot; Free forever &middot; <Changelog />
       </footer>
     </div>
   );

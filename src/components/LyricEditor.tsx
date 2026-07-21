@@ -59,9 +59,7 @@ export default function LyricEditor({
     [slides, onSlidesReorder],
   );
 
-  const visibleDuplicates = duplicates.filter(
-    (d) => !dismissed.has(`${d.aIndex}-${d.bIndex}`),
-  );
+  const visibleDuplicates = duplicates.filter((d) => !dismissed.has(`${d.aIndex}-${d.bIndex}`));
 
   return (
     <div className="grid flex-1 grid-cols-1 gap-4 min-h-0 md:grid-cols-2 md:gap-6">
@@ -98,7 +96,19 @@ export default function LyricEditor({
               onClick={() => setShowLyricsSearch(true)}
               className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-normal normal-case text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
               Search Lyrics
             </button>
             <span className="flex items-center gap-1.5 text-[10px] font-normal normal-case text-muted-foreground">
@@ -121,9 +131,7 @@ export default function LyricEditor({
               const key = `${d.aIndex}-${d.bIndex}`;
               const pct = Math.round(d.similarity * 100);
               const sameHeader =
-                d.aHeader &&
-                d.bHeader &&
-                d.aHeader.toLowerCase() === d.bHeader.toLowerCase();
+                d.aHeader && d.bHeader && d.aHeader.toLowerCase() === d.bHeader.toLowerCase();
               const nextA = sameHeader ? nextHeader(d.aHeader) : null;
               const nextB = sameHeader ? nextHeader(d.bHeader) : null;
 
@@ -139,9 +147,7 @@ export default function LyricEditor({
                   <span className="font-medium text-amber-800 dark:text-amber-300">
                     {d.bHeader || `Slide ${d.bIndex + 1}`}
                   </span>
-                  <span className="text-amber-600 dark:text-amber-500">
-                    ({pct}% similar)
-                  </span>
+                  <span className="text-amber-600 dark:text-amber-500">({pct}% similar)</span>
                   <span className="ml-auto flex items-center gap-1">
                     {sameHeader && nextA && (
                       <button
@@ -164,9 +170,7 @@ export default function LyricEditor({
                       Remove {d.bHeader || `Slide ${d.bIndex + 1}`}
                     </button>
                     <button
-                      onClick={() =>
-                        setDismissed((prev) => new Set(prev).add(key))
-                      }
+                      onClick={() => setDismissed((prev) => new Set(prev).add(key))}
                       className="rounded px-1.5 py-0.5 text-muted-foreground transition-colors hover:bg-muted"
                     >
                       Keep Both
@@ -205,11 +209,7 @@ export default function LyricEditor({
               contentEditable
               suppressContentEditableWarning
               spellCheck={false}
-              onInput={(e) =>
-                onOutputChange(
-                  (e.target as HTMLDivElement).textContent || "",
-                )
-              }
+              onInput={(e) => onOutputChange((e.target as HTMLDivElement).textContent || "")}
               className="absolute inset-0 overflow-y-auto whitespace-pre-wrap p-4 font-mono text-sm leading-relaxed text-foreground outline-none"
             >
               {output}

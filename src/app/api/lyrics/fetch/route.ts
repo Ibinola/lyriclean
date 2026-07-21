@@ -18,9 +18,11 @@ async function fetchFromGenius(url: string) {
   let lyrics = "";
   lyricsContainers.each((_, el) => {
     $(el).find("br").replaceWith("\n");
-    $(el).find("i").each((__, iEl) => {
-      $(iEl).replaceWith($(iEl).text());
-    });
+    $(el)
+      .find("i")
+      .each((__, iEl) => {
+        $(iEl).replaceWith($(iEl).text());
+      });
     lyrics += $(el).text() + "\n";
   });
 
@@ -71,13 +73,7 @@ async function fetchFromAfricanGospelLyrics(title: string) {
   const postHtml = await postRes.text();
   const $$ = load(postHtml);
 
-  const contentSelectors = [
-    ".entry-content",
-    ".post-content",
-    ".hentry",
-    "article",
-    ".entry",
-  ];
+  const contentSelectors = [".entry-content", ".post-content", ".hentry", "article", ".entry"];
 
   let content = "";
   for (const selector of contentSelectors) {
@@ -107,9 +103,7 @@ async function fetchFromAfricanGospelLyrics(title: string) {
     }
   }
 
-  content = content
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  content = content.replace(/\n{3,}/g, "\n\n").trim();
 
   return content || null;
 }
@@ -125,17 +119,23 @@ export async function POST(request: NextRequest) {
   let source = "";
 
   if (url) {
-    try { lyrics = await fetchFromGenius(url); } catch {}
+    try {
+      lyrics = await fetchFromGenius(url);
+    } catch {}
     if (lyrics) source = "genius";
   }
 
   if (!lyrics && title && artist) {
-    try { lyrics = await fetchFromLRCLIB(title, artist); } catch {}
+    try {
+      lyrics = await fetchFromLRCLIB(title, artist);
+    } catch {}
     if (lyrics) source = "lrclib";
   }
 
   if (!lyrics && title) {
-    try { lyrics = await fetchFromAfricanGospelLyrics(title); } catch {}
+    try {
+      lyrics = await fetchFromAfricanGospelLyrics(title);
+    } catch {}
     if (lyrics) source = "agl";
   }
 

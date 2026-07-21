@@ -16,8 +16,7 @@ describe("parseSections", () => {
   });
 
   it("parses multiple sections", () => {
-    const text =
-      "Verse 1\nAmazing grace\n\nChorus\nHow sweet\nthe sound";
+    const text = "Verse 1\nAmazing grace\n\nChorus\nHow sweet\nthe sound";
     const sections = parseSections(text);
     expect(sections).toHaveLength(2);
     expect(sections[0].header).toBe("Verse 1");
@@ -53,25 +52,19 @@ describe("sectionsToText", () => {
   });
 
   it("handles headerless sections", () => {
-    const sections = [
-      { id: "1", header: "", lines: ["Line A", "Line B"] },
-    ];
+    const sections = [{ id: "1", header: "", lines: ["Line A", "Line B"] }];
     expect(sectionsToText(sections)).toBe("Line A\nLine B");
   });
 });
 
 describe("hasSectionHeaders", () => {
   it("returns true when sections have headers", () => {
-    const sections = [
-      { id: "1", header: "Verse 1", lines: ["A"] },
-    ];
+    const sections = [{ id: "1", header: "Verse 1", lines: ["A"] }];
     expect(hasSectionHeaders(sections)).toBe(true);
   });
 
   it("returns false when no sections have headers", () => {
-    const sections = [
-      { id: "1", header: "", lines: ["A"] },
-    ];
+    const sections = [{ id: "1", header: "", lines: ["A"] }];
     expect(hasSectionHeaders(sections)).toBe(false);
   });
 

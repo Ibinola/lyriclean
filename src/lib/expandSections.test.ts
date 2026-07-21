@@ -24,10 +24,7 @@ describe("expandReferences", () => {
   });
 
   it("expands bracketed reference [Refrain]", () => {
-    const input =
-      "Verse\nLine 1\n\n" +
-      "Refrain\nLine A\nLine B\n\n" +
-      "[Refrain]";
+    const input = "Verse\nLine 1\n\n" + "Refrain\nLine A\nLine B\n\n" + "[Refrain]";
     const result = expandReferences(input);
     expect(result).toContain("Line A");
     expect(result).toContain("Line B");
@@ -50,29 +47,21 @@ describe("expandReferences", () => {
 
   it("expands numbered references like (Chorus 2)", () => {
     const input =
-      "Verse 1\nLine one\n\n" +
-      "Chorus\nChorus line\n\n" +
-      "Verse 2\nLine two\n\n" +
-      "(Chorus)";
+      "Verse 1\nLine one\n\n" + "Chorus\nChorus line\n\n" + "Verse 2\nLine two\n\n" + "(Chorus)";
     const result = expandReferences(input);
     expect(result).toContain("Chorus line");
     expect(result).not.toContain("(Chorus)");
   });
 
   it("does not expand if section has no content lines", () => {
-    const input =
-      "Chorus\n\n" +
-      "(Chorus)";
+    const input = "Chorus\n\n" + "(Chorus)";
     const result = expandReferences(input);
     expect(result).toContain("(Chorus)");
   });
 
   it("handles indirect references", () => {
     const input =
-      "Verse 1\nLine one\n\n" +
-      "Chorus\nChorus line\n\n" +
-      "(Verse 1)\n\n" +
-      "(Chorus)";
+      "Verse 1\nLine one\n\n" + "Chorus\nChorus line\n\n" + "(Verse 1)\n\n" + "(Chorus)";
     const result = expandReferences(input);
     expect(result).toContain("Line one");
     expect(result).toContain("Chorus line");
@@ -81,9 +70,7 @@ describe("expandReferences", () => {
   });
 
   it("preserves non-reference parenthetical text", () => {
-    const input =
-      "Verse\nLine 1\n\n" +
-      "Some (parenthetical) note";
+    const input = "Verse\nLine 1\n\n" + "Some (parenthetical) note";
     const result = expandReferences(input);
     expect(result).toContain("(parenthetical)");
   });

@@ -1,6 +1,14 @@
 const labels = [
-  "verse", "chorus", "bridge", "intro", "outro",
-  "pre-chorus", "refrain", "hook", "tag", "interlude",
+  "verse",
+  "chorus",
+  "bridge",
+  "intro",
+  "outro",
+  "pre-chorus",
+  "refrain",
+  "hook",
+  "tag",
+  "interlude",
 ];
 
 const labelPattern = new RegExp(

@@ -34,11 +34,7 @@ export function parseSections(text: string): Section[] {
 
 export function sectionsToText(sections: Section[]): string {
   return sections
-    .map((s) =>
-      s.header
-        ? [s.header, ...s.lines].join("\n")
-        : s.lines.join("\n"),
-    )
+    .map((s) => (s.header ? [s.header, ...s.lines].join("\n") : s.lines.join("\n")))
     .join("\n\n");
 }
 

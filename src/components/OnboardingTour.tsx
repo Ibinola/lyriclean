@@ -72,10 +72,7 @@ function getArrowStyle(placement: string) {
   }
 }
 
-function getTooltipPosition(
-  el: Element,
-  placement: string,
-): { top: number; left: number } {
+function getTooltipPosition(el: Element, placement: string): { top: number; left: number } {
   const rect = el.getBoundingClientRect();
   const gap = 12;
 
@@ -141,9 +138,7 @@ export default function OnboardingTour() {
           </div>
           <div className="px-5 pb-4 pt-3">
             <h3 className="mb-1 text-[15px] font-semibold">{s.title}</h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {s.body}
-            </p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{s.body}</p>
           </div>
           <div className="flex items-center justify-between border-t px-5 py-3">
             <button
@@ -162,9 +157,7 @@ export default function OnboardingTour() {
                 Previous
               </button>
               <button
-                onClick={() =>
-                  step < steps.length - 1 ? setStep(step + 1) : finish()
-                }
+                onClick={() => (step < steps.length - 1 ? setStep(step + 1) : finish())}
                 className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs text-white transition-colors hover:bg-indigo-700"
               >
                 {step < steps.length - 1 ? "Next" : "Done"}
@@ -177,9 +170,7 @@ export default function OnboardingTour() {
   }
 
   // Desktop: positioned tooltip
-  const pos = el
-    ? getTooltipPosition(el, s.placement)
-    : { top: 200, left: window.innerWidth / 2 };
+  const pos = el ? getTooltipPosition(el, s.placement) : { top: 200, left: window.innerWidth / 2 };
 
   const tooltipWidth = 320;
   const tooltipHeight = 180;
@@ -227,9 +218,7 @@ export default function OnboardingTour() {
         </div>
         <div className="px-5 pb-4 pt-3">
           <h3 className="mb-1 text-[15px] font-semibold">{s.title}</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {s.body}
-          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{s.body}</p>
         </div>
         <div className="flex items-center justify-between border-t px-5 py-3">
           <button
@@ -248,9 +237,7 @@ export default function OnboardingTour() {
               Previous
             </button>
             <button
-              onClick={() =>
-                step < steps.length - 1 ? setStep(step + 1) : finish()
-              }
+              onClick={() => (step < steps.length - 1 ? setStep(step + 1) : finish())}
               className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs text-white transition-colors hover:bg-indigo-700"
             >
               {step < steps.length - 1 ? "Next" : "Done"}

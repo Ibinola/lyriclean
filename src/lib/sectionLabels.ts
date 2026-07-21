@@ -1,7 +1,16 @@
 const sectionLabels = [
-  "verse", "chorus", "bridge", "intro", "outro",
-  "pre-chorus", "refrain", "hook", "tag", "interlude",
-  "chants", "instrumental",
+  "verse",
+  "chorus",
+  "bridge",
+  "intro",
+  "outro",
+  "pre-chorus",
+  "refrain",
+  "hook",
+  "tag",
+  "interlude",
+  "chants",
+  "instrumental",
 ];
 
 const labelAliases = new Map([
@@ -42,7 +51,10 @@ function resolveLabelAlias(label: string): string {
 }
 
 function matchesSectionLabel(text: string): boolean {
-  let label = text.replace(/^\[|\]$/g, "").replace(/:$/, "").trim();
+  let label = text
+    .replace(/^\[|\]$/g, "")
+    .replace(/:$/, "")
+    .trim();
   const lower = label.toLowerCase();
   if (sectionLabels.includes(lower)) return true;
   if (sectionLabels.some((s) => new RegExp(`^${s}\\s*\\d*$`, "i").test(lower))) return true;
@@ -60,12 +72,18 @@ function matchesSectionLabel(text: string): boolean {
 }
 
 function normalizeSectionLabel(trimmed: string): string {
-  let label = trimmed.replace(/^\[|\]$/g, "").replace(/:$/, "").trim();
+  let label = trimmed
+    .replace(/^\[|\]$/g, "")
+    .replace(/:$/, "")
+    .trim();
   const colonIdx = label.indexOf(":");
   if (colonIdx > 0) {
     const prefix = label.slice(0, colonIdx).trim();
     const lowerPrefix = prefix.toLowerCase();
-    if (sectionLabels.includes(lowerPrefix) || sectionLabels.some((s) => new RegExp(`^${s}\\s*\\d*$`, "i").test(lowerPrefix))) {
+    if (
+      sectionLabels.includes(lowerPrefix) ||
+      sectionLabels.some((s) => new RegExp(`^${s}\\s*\\d*$`, "i").test(lowerPrefix))
+    ) {
       label = prefix;
     }
     if (resolveLabelAlias(prefix) !== prefix) label = prefix;
@@ -101,4 +119,10 @@ function extractBracketedLabel(trimmed: string): string | null {
   return null;
 }
 
-export { sectionLabels, labelAliases, matchesSectionLabel, normalizeSectionLabel, extractBracketedLabel };
+export {
+  sectionLabels,
+  labelAliases,
+  matchesSectionLabel,
+  normalizeSectionLabel,
+  extractBracketedLabel,
+};
