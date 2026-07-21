@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/Toaster";
@@ -14,9 +14,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "lyriclean — Clean Lyrics, Clear Worship",
-  description: "Open-source lyric preparation for worship teams.",
+  description:
+    "Turn raw song lyrics into presentation-ready slides. Free, open-source lyric preparation tool for worship teams.",
+  openGraph: {
+    title: "lyriclean — Clean Lyrics, Clear Worship",
+    description:
+      "Turn raw song lyrics into presentation-ready slides. Free, open-source lyric preparation tool for worship teams.",
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

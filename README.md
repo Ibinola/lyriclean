@@ -2,13 +2,18 @@
 
 **Clean lyrics. Clear worship. Open source.**
 
-Paste raw lyrics → get a clean, structured version ready for EasyWorship and other projection software. Strips fillers (`x2`, `(Repeat)`, `(Refrain)`, emoji, numbering), normalizes section headers, and splits lyrics into slides.
+Turn raw song lyrics into presentation-ready slides in seconds. Built for worship teams who want to spend less time formatting and more time leading.
 
-Built for church media teams who get song lyrics late and need them projection-ready in seconds.
+[lyriclean.vercel.app](https://lyriclean.vercel.app) → Paste → Clean → Export
+
+## Usage
+
+- **`/`** — Landing page with live demo of the cleaning pipeline
+- **`/tool`** — The actual LyriClean tool: paste, clean, reorder, export
 
 ## Tech Stack
 
-- [Next.js 15](https://nextjs.org) (App Router)
+- [Next.js 15](https://nextjs.org) (App Router + server components)
 - [TypeScript](https://typescriptlang.org)
 - [Tailwind CSS v4](https://tailwindcss.com)
 - [shadcn/ui](https://ui.shadcn.com)
@@ -17,12 +22,24 @@ Built for church media teams who get song lyrics late and need them projection-r
 
 ```bash
 npm install
-npm run dev
+npm run dev        # → http://localhost:3000
+npm run test       # 75+ tests
+npm run build      # typecheck + lint + compile
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+## Features
 
-**Live**: [lyriclean.vercel.app](https://lyriclean.vercel.app)
+| Feature | Description |
+|---|---|
+| **Smart Section Detection** | Automatically identifies verses, choruses, bridges, and more |
+| **Spellcheck for Worship** | Built-in correction map catches common worship lyric typos |
+| **Filler Line Removal** | Strips instructions, voice annotations, and meta-comments |
+| **Duplicate Detection** | Finds nearly-identical slides and lets you remove or rename them |
+| **Slide Reordering** | Drag and drop to reorder sections |
+| **Export Anywhere** | EasyWorship XML, ProPresenter text, or PowerPoint |
+| **Lyrics Lookup** | Search Genius + LRCLIB and auto-fill lyrics |
+| **Lines per Slide** | Split lyrics into groups for slide breaks |
+| **Search & Replace** | Batch-fix repeated typos |
 
 ## Deploy
 
@@ -33,16 +50,7 @@ npm i -g vercel
 vercel
 ```
 
-Or connect your GitHub repo at [vercel.com/new](https://vercel.com/new) — it detects Next.js automatically.
-
-## Features
-
-- **Paste & Clean** — raw lyrics → cleaned output
-- **Filler Removal** — strips `x2`, `(Repeat)`, `(Refrain)`, emoji, numbering, bullets
-- **Section Detection** — normalizes `Verse 1:`, `[Chorus]`, `Refrain:` into clean headers
-- **Lines per Slide** — splits lyrics into groups for EasyWorship slide breaks
-- **Search & Replace** — batch-fix repeated typos across the whole song
-- **One-Click Copy** — copy plain text, paste directly into projection software
+Or connect your GitHub repo at [vercel.com/new](https://vercel.com/new).
 
 ## License
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function Header() {
+export default function Header({ homeHref = "/" }: { homeHref?: string }) {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={homeHref} className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-lg text-white">
             &#9835;
           </span>
