@@ -319,6 +319,32 @@ export default function Home() {
     setRawLyrics(val);
   };
 
+  const handleTranscribeLine = useCallback((line: string) => {
+    setRawLyrics((prev) => (prev ? prev.replace(/\s+$/, "") + "\n" + line : line));
+  }, []);
+
+  const handleIdentified = useCallback(
+    async (title: string, artist: string) => {
+      try {
+        const res = await fetch("/api/lyrics/fetch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, artist }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.lyrics) {
+          handleLyricsFound(data.lyrics, title, artist);
+          toast(`Identified "${title}" — lyrics loaded`, "success");
+        } else {
+          toast(`Identified "${title}"${artist ? ` by ${artist}` : ""} — lyrics unavailable`, "info");
+        }
+      } catch {
+        toast(`Identified "${title}" — lyrics fetch failed`, "info");
+      }
+    },
+    [handleLyricsFound, toast],
+  );
+
   const handleOptionsChange = useCallback((options: CleaningOptions) => {
     setCleaningOptions(options);
   }, []);
@@ -412,6 +438,8 @@ export default function Home() {
           onDuplicateRemove={handleDuplicateRemove}
           onDuplicateRename={handleDuplicateRename}
           onPaste={handlePaste}
+          onTranscribeLine={handleTranscribeLine}
+          onIdentified={handleIdentified}
         />
 
         <ControlPanel

@@ -5,6 +5,8 @@ import { useCallback, useState } from "react";
 import SortableSections from "@/components/SortableSections";
 import LyricsSearch from "@/components/LyricsSearch";
 import type { DuplicateGroup } from "@/lib/detectDuplicates";
+import { useLiveTranscription } from "@/lib/useLiveTranscription";
+import { useSongIdentifier, CLIP_SECONDS } from "@/lib/useSongIdentifier";
 
 interface LyricEditorProps {
   input: string;
@@ -18,6 +20,8 @@ interface LyricEditorProps {
   onDuplicateRemove: (paraIndex: number) => void;
   onDuplicateRename: (paraIndex: number, newHeader: string) => void;
   onPaste?: (e: React.ClipboardEvent) => void;
+  onTranscribeLine?: (line: string) => void;
+  onIdentified?: (title: string, artist: string) => void;
 }
 
 function nextHeader(header: string): string | null {
@@ -40,10 +44,22 @@ export default function LyricEditor({
   onDuplicateRemove,
   onDuplicateRename,
   onPaste,
+  onTranscribeLine,
+  onIdentified,
 }: LyricEditorProps) {
   const [showEmpty, setShowEmpty] = useState(true);
   const [showLyricsSearch, setShowLyricsSearch] = useState(false);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+
+  const transcribe = useLiveTranscription(
+    useCallback((line: string) => onTranscribeLine?.(line), [onTranscribeLine]),
+  );
+  const transcribing = transcribe.state === "listening";
+
+  const identify = useSongIdentifier(
+    useCallback((title: string, artist: string) => onIdentified?.(title, artist), [onIdentified]),
+  );
+  const identifying = identify.state === "recording" || identify.state === "identifying";
 
   const handleReorder = useCallback(
     (newSlides: string[]) => {
@@ -68,16 +84,104 @@ export default function LyricEditor({
       <Card className="flex flex-col overflow-hidden">
         <div className="flex items-center justify-between border-b bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <span>Paste Raw Lyrics</span>
-          <button
-            onClick={() => {
-              onInputChange("");
-              setShowEmpty(true);
-            }}
-            className="rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            &#10005; Clear
-          </button>
+          <span className="flex items-center gap-2">
+            <button
+              onClick={identify.state === "recording" ? identify.stop : identify.start}
+              disabled={!identify.supported}
+              title={
+                identify.supported
+                  ? identify.state === "recording"
+                    ? "Stop and identify"
+                    : "Identify the song playing nearby"
+                  : "Song identification requires Chrome or Edge"
+              }
+              className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-normal normal-case transition-colors ${
+                identify.state === "recording"
+                  ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              } disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </svg>
+              {identify.state === "recording"
+                ? `Recording ${identify.elapsed}s`
+                : identify.state === "identifying"
+                  ? "Identifying…"
+                  : "Identify"}
+            </button>
+            <button
+              onClick={transcribing ? transcribe.stop : transcribe.start}
+              disabled={!transcribe.supported}
+              title={
+                transcribe.supported
+                  ? transcribing
+                    ? "Stop listening"
+                    : "Transcribe from microphone"
+                  : "Live transcription requires Chrome or Edge"
+              }
+              className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-normal normal-case transition-colors ${
+                transcribing
+                  ? "bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              } disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" x2="12" y1="19" y2="22" />
+              </svg>
+              {transcribing ? "Stop" : "Transcribe"}
+            </button>
+            <button
+              onClick={() => {
+                onInputChange("");
+                setShowEmpty(true);
+              }}
+              className="rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              &#10005; Clear
+            </button>
+          </span>
         </div>
+
+        {identifying && (
+          <div className="border-b bg-indigo-50 px-4 py-2 dark:bg-indigo-950/30">
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+              {identify.state === "recording"
+                ? `Listening for ${CLIP_SECONDS}s…`
+                : "Identifying song…"}
+            </div>
+            <p className="mt-1 font-mono text-xs leading-relaxed text-muted-foreground">
+              {identify.state === "recording"
+                ? "Keep the audio near the mic. Stop early or wait for the clip to finish."
+                : "Matching the audio fingerprint…"}
+            </p>
+          </div>
+        )}
+
+        {identify.error && (
+          <div className="border-b bg-red-50 px-4 py-2 text-[11px] text-red-600 dark:bg-red-950/30 dark:text-red-400">
+            {identify.error}
+          </div>
+        )}
+
+        {(transcribing || transcribe.interim || transcribe.committed || transcribe.error) && (
+          <div className="border-b bg-indigo-50 px-4 py-2 dark:bg-indigo-950/30">
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+              {transcribe.error ? transcribe.error : transcribing ? "Listening…" : "Transcribed"}
+            </div>
+            <p className="mt-1 whitespace-pre-wrap font-mono text-xs leading-relaxed text-foreground">
+              {transcribe.committed ? transcribe.committed + "\n" : ""}
+              <span className="text-muted-foreground">{transcribe.interim}</span>
+            </p>
+          </div>
+        )}
+
         <div className="relative flex-1 min-h-0">
           <textarea
             id="input-area"

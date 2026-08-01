@@ -11,6 +11,44 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "v0.7",
+    date: "2026-08-01",
+    title: "Identify Song (Shazam-style)",
+    items: [
+      {
+        label: "Identify from mic",
+        detail: "Hold the phone near the choir or speaker, click Identify — a 12s clip is fingerprinted via AudD",
+      },
+      {
+        label: "Auto-loads lyrics",
+        detail: "Matched title/artist feed straight into the existing LRCLIB → African Gospel Lyrics pipeline",
+      },
+      {
+        label: "How to enable",
+        detail: "Add an AUDD_API_TOKEN env var (free tier: 200 recognitions/month) in Vercel → Settings → Environment Variables",
+      },
+    ],
+  },
+  {
+    version: "v0.6",
+    date: "2026-08-01",
+    title: "Live Mic Transcription",
+    items: [
+      {
+        label: "Transcribe from mic",
+        detail: "Speak or sing into the mic and hear it back as text, live (Google Meet-style captions)",
+      },
+      {
+        label: "Streams into the input",
+        detail: "Captions append to the lyrics box so you can Clean them like any paste",
+      },
+      {
+        label: "Browser note",
+        detail: "Uses the Web Speech API — works in Chrome & Edge; speech-driven, so spoken lyrics are far more accurate than sung",
+      },
+    ],
+  },
+  {
     version: "v0.5",
     date: "2026-07-21",
     title: "Error Boundary, Toasts, Loading States",
