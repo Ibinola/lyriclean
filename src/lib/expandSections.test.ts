@@ -74,4 +74,22 @@ describe("expandReferences", () => {
     const result = expandReferences(input);
     expect(result).toContain("(parenthetical)");
   });
+
+  it("does not collapse numbered bracketed section headers", () => {
+    const input =
+      "[Verse 1]\nLine one\n\n" +
+      "[Verse 2]\nLine two\n\n" +
+      "[Verse 3]\nLine three\n\n" +
+      "[Verse 4]\nLine four";
+    const result = expandReferences(input);
+    expect(result).toContain("[Verse 1]");
+    expect(result).toContain("[Verse 2]");
+    expect(result).toContain("[Verse 3]");
+    expect(result).toContain("[Verse 4]");
+    expect(result).toContain("Line one");
+    expect(result).toContain("Line two");
+    expect(result).toContain("Line three");
+    expect(result).toContain("Line four");
+    expect(result.match(/Line one/g)?.length).toBe(1);
+  });
 });

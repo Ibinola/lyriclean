@@ -114,6 +114,7 @@ export default function SettingsPanel({ isOpen, onClose, onOptionsChange }: Sett
           {toggleGroup("Formatting", [
             "removeEmoji",
             "normalizeSectionLabels",
+            "keepSectionHeaders",
             "spellcheck",
             "collapseEmptyLines",
           ] as (keyof CleaningOptions)[], options, setOne)}

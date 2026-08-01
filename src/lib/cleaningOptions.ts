@@ -11,6 +11,7 @@ export interface CleaningOptions {
   stripBulletPrefixes: boolean;
   stripCallResponse: boolean;
   normalizeSectionLabels: boolean;
+  keepSectionHeaders: boolean;
   spellcheck: boolean;
   collapseEmptyLines: boolean;
 }
@@ -41,6 +42,7 @@ export const defaultOptions: CleaningOptions = {
   stripBulletPrefixes: true,
   stripCallResponse: true,
   normalizeSectionLabels: true,
+  keepSectionHeaders: false,
   spellcheck: true,
   collapseEmptyLines: true,
 };
@@ -77,6 +79,7 @@ export const optionLabels: Record<keyof CleaningOptions, string> = {
   stripBulletPrefixes: "Strip bullet prefixes (-, •, ‣)",
   stripCallResponse: "Strip (Call/Response:) labels",
   normalizeSectionLabels: "Normalize section labels (verse→Verse, refrén→Chorus)",
+  keepSectionHeaders: "Keep section headers in output (Verse 1, Chorus)",
   spellcheck: "Spellcheck (80+ worship corrections)",
   collapseEmptyLines: "Collapse consecutive empty lines",
 };

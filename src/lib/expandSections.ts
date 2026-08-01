@@ -55,10 +55,13 @@ export function expandReferences(raw: string): string {
     }
   }
 
-  // Second pass: replace references
+  // Second pass: replace references.
+  // The whole paragraph must BE a bare reference like `(Refrain)`.
+  // Section headers like `[Verse 2]` that begin a content paragraph must NOT
+  // be treated as references (otherwise numbered verses collapse to one).
   const refPattern = new RegExp(
     `^[\\[\\\(]\\s*(${labels.map((l) => l + "(?:\\s*\\d+)?").join("|")})\\s*[\\]\\)]\\s*$`,
-    "im",
+    "i",
   );
 
   const result = paragraphs.map((para) => {

@@ -13,7 +13,7 @@ describe("cleanLyrics", () => {
 
   it("strips ANSI escape codes", () => {
     const input = "\x1b[31mVerse\x1b[0m\nAmazing grace";
-    const result = cleanLyrics(input);
+    const result = cleanLyrics(input, { keepSectionHeaders: true });
     expect(result.text).toContain("Amazing grace");
     expect(result.text).toContain("Verse");
   });
@@ -27,27 +27,34 @@ describe("cleanLyrics", () => {
 
   it("detects bracketed section labels", () => {
     const input = "[Verse 1]\nAmazing grace\n[Chorus]\nHow sweet the sound";
-    const result = cleanLyrics(input);
+    const result = cleanLyrics(input, { keepSectionHeaders: true });
     expect(result.text).toBe("Verse 1\nAmazing grace\nChorus\nHow sweet the sound");
     expect(result.sections).toContain("Verse 1");
     expect(result.sections).toContain("Chorus");
   });
 
+  it("strips section headers from output by default but still detects sections", () => {
+    const input = "[Verse 1]\nAmazing grace\n[Chorus]\nHow sweet the sound";
+    const result = cleanLyrics(input);
+    expect(result.text).toBe("Amazing grace\n\nHow sweet the sound");
+    expect(result.sections).toEqual(["Verse 1", "Chorus"]);
+  });
+
   it("detects bare section labels", () => {
     const input = "Verse 1\nAmazing grace\nChorus\nHow sweet the sound";
-    const result = cleanLyrics(input);
+    const result = cleanLyrics(input, { keepSectionHeaders: true });
     expect(result.text).toBe("Verse 1\nAmazing grace\nChorus\nHow sweet the sound");
   });
 
   it("resolves Hungarian label aliases", () => {
     const input = "[refrén]\nHallelujah";
-    const result = cleanLyrics(input);
+    const result = cleanLyrics(input, { keepSectionHeaders: true });
     expect(result.text).toContain("Chorus");
   });
 
   it("resolves Italian label aliases", () => {
     const input = "Ritornello\nGloria a Dio";
-    const result = cleanLyrics(input);
+    const result = cleanLyrics(input, { keepSectionHeaders: true });
     expect(result.text).toContain("Chorus");
   });
 
@@ -89,6 +96,12 @@ describe("cleanLyrics", () => {
     expect(result.text).not.toContain("BGV");
   });
 
+  it("strips spaced x-number annotations like 'x 8'", () => {
+    const input = "Yahweh Sabaoth x 8\nIba eh, iba x 10\nOf Israel x7";
+    const result = cleanLyrics(input);
+    expect(result.text).toBe("Yahweh Sabaoth\nIba eh, iba\nOf Israel");
+  });
+
   it("removes meta-comment lines", () => {
     const input = "Amazing grace\n3 contributors\nHow sweet";
     const result = cleanLyrics(input);
@@ -127,13 +140,13 @@ describe("cleanLyrics", () => {
 
   it("normalizes pre-chorus label", () => {
     const input = "Prechorus\nLine 1\nPre-chorus\nLine 2";
-    const result = cleanLyrics(input);
+    const result = cleanLyrics(input, { keepSectionHeaders: true });
     expect(result.text).toContain("Pre-Chorus");
   });
 
   it("handles colon-prefixed section labels", () => {
     const input = "Verse 1:\nAmazing grace\nChorus:\nHow sweet";
-    const result = cleanLyrics(input);
+    const result = cleanLyrics(input, { keepSectionHeaders: true });
     expect(result.text).toContain("Verse 1");
     expect(result.text).toContain("Chorus");
   });
@@ -147,7 +160,7 @@ describe("cleanLyrics", () => {
 
   it("extracts section labels from mixed content", () => {
     const input = "Verse 1:\nLine that looks like content\n[Chorus]\nChorus content";
-    const result = cleanLyrics(input);
+    const result = cleanLyrics(input, { keepSectionHeaders: true });
     expect(result.text).toContain("Verse 1");
     expect(result.text).toContain("Chorus");
   });

@@ -51,7 +51,7 @@ function removeEmoji(str: string): string {
 function isFillerLine(trimmed: string): boolean {
   const lower = trimmed.toLowerCase();
   if (
-    /^[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|interlude|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?$/.test(
+    /^[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|\bx\s*\d+)|(?:repeat|refrain|instrumentals?|interlude|chants?)(?:\s+(?:\d+\s*x\s*\d*|\bx\s*\d+))?)\s*[\]\)]?$/.test(
       lower,
     )
   )
@@ -62,6 +62,8 @@ function isFillerLine(trimmed: string): boolean {
   if (/^Refrain:\s?$/i.test(trimmed)) return true;
   if (removeEmoji(trimmed) === "" && trimmed.length > 0) return true;
   if (/^\d+\s*contributors?/i.test(trimmed)) return true;
+  if (/^lyrics?\s+(?:for|to)\s+/i.test(trimmed)) return true;
+  if (/\bsong\s+request\b/i.test(trimmed)) return true;
   const clean = lower.replace(/(?:\d+\s*x\s*\d*|x\d+)/g, "");
   const words = clean.split(/[\s,;:!?()\[\]'"\/]+/).filter((w) => w.length > 0);
   if (words.length === 0) return true;

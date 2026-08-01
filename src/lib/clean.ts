@@ -79,7 +79,7 @@ export function cleanLyrics(raw: string, options?: Partial<CleaningOptions>): Cl
     const bracketed = opts.normalizeSectionLabels ? extractBracketedLabel(trimmed) : null;
     if (bracketed) {
       const normalized = normalizeSectionLabel(bracketed);
-      result.push(normalized);
+      result.push(opts.keepSectionHeaders ? normalized : "");
       if (!foundSections.includes(normalized)) {
         foundSections.push(normalized);
         report.sectionsDetected++;
@@ -89,7 +89,7 @@ export function cleanLyrics(raw: string, options?: Partial<CleaningOptions>): Cl
 
     if (opts.normalizeSectionLabels && matchesSectionLabel(trimmed)) {
       const normalized = normalizeSectionLabel(trimmed);
-      result.push(normalized);
+      result.push(opts.keepSectionHeaders ? normalized : "");
       if (!foundSections.includes(normalized)) {
         foundSections.push(normalized);
         report.sectionsDetected++;
@@ -105,9 +105,9 @@ export function cleanLyrics(raw: string, options?: Partial<CleaningOptions>): Cl
 
     // Repeat markers
     if (opts.removeRepeatMarkers) {
-      const hasXNumber = /(?:\d+\s*x\s*\d*|x\d+)/i.test(trimmed);
+      const hasXNumber = /(?:\d+\s*x\s*\d*|\bx\s*\d+)/i.test(trimmed);
       trimmed = trimmed.replace(
-        /\s*[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|x\d+)|(?:repeat|refrain|instrumentals?|chants?)(?:\s+(?:\d+\s*x\s*\d*|x\d+))?)\s*[\]\)]?\s*$/i,
+        /\s*[\[\(]?\s*(?:(?:\d+\s*x\s*\d*|\bx\s*\d+)|(?:repeat|refrain|instrumentals?|chants?)(?:\s+(?:\d+\s*x\s*\d*|\bx\s*\d+))?)\s*[\]\)]?\s*$/i,
         "",
       );
       if (hasXNumber) report.repeatMarkersStripped++;
@@ -119,7 +119,7 @@ export function cleanLyrics(raw: string, options?: Partial<CleaningOptions>): Cl
         if (trimmed !== before) report.repeatMarkersStripped++;
       }
 
-      trimmed = trimmed.replace(/\s*[\[\(]?\s*(?:\d+\s*x\s*\d*|x\d+)\s*[\]\)]?\s*$/i, "");
+      trimmed = trimmed.replace(/\s*[\[\(]?\s*(?:\d+\s*x\s*\d*|\bx\s*\d+)\s*[\]\)]?\s*$/i, "");
     }
 
     // Number prefixes
