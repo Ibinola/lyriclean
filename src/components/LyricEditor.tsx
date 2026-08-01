@@ -129,56 +129,86 @@ export default function LyricEditor({
         </div>
 
         {visibleDuplicates.length > 0 && (
-          <div className="space-y-1.5 border-b bg-amber-50 px-4 py-2.5 dark:bg-amber-950/20">
+          <div className="max-h-72 space-y-3 overflow-y-auto border-b bg-amber-50 px-4 py-3 dark:bg-amber-950/20">
             {visibleDuplicates.map((d) => {
               const key = `${d.aIndex}-${d.bIndex}`;
               const pct = Math.round(d.similarity * 100);
               const sameHeader =
                 d.aHeader && d.bHeader && d.aHeader.toLowerCase() === d.bHeader.toLowerCase();
               const nextA = sameHeader ? nextHeader(d.aHeader) : null;
-              const nextB = sameHeader ? nextHeader(d.bHeader) : null;
+
+              const labelA = d.aHeader || `Slide ${d.aIndex + 1}`;
+              const labelB = d.bHeader || `Slide ${d.bIndex + 1}`;
 
               return (
-                <div key={key} className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-amber-700 dark:text-amber-400">
-                    &#9888; Possible duplicate:
-                  </span>
-                  <span className="font-medium text-amber-800 dark:text-amber-300">
-                    {d.aHeader || `Slide ${d.aIndex + 1}`}
-                  </span>
-                  <span className="text-amber-600 dark:text-amber-500">and</span>
-                  <span className="font-medium text-amber-800 dark:text-amber-300">
-                    {d.bHeader || `Slide ${d.bIndex + 1}`}
-                  </span>
-                  <span className="text-amber-600 dark:text-amber-500">({pct}% similar)</span>
-                  <span className="ml-auto flex items-center gap-1">
+                <div key={key} className="rounded-lg border border-amber-200 bg-card p-3 dark:border-amber-800/40">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="text-amber-700 dark:text-amber-400">
+                      &#9888; Possible duplicate:
+                    </span>
+                    <span className="font-medium text-amber-800 dark:text-amber-300">{labelA}</span>
+                    <span className="text-amber-600 dark:text-amber-500">and</span>
+                    <span className="font-medium text-amber-800 dark:text-amber-300">{labelB}</span>
+                    <span className="text-amber-600 dark:text-amber-500">({pct}% similar)</span>
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div className="rounded-md border border-amber-200/70 bg-background p-2 dark:border-amber-800/30">
+                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                        {labelA}
+                      </p>
+                      <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-foreground">
+                        {d.aContent}
+                      </pre>
+                    </div>
+                    <div className="rounded-md border border-amber-200/70 bg-background p-2 dark:border-amber-800/30">
+                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                        {labelB}
+                      </p>
+                      <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-foreground">
+                        {d.bContent}
+                      </pre>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        onDuplicateRemove(d.aIndex);
+                        setDismissed(new Set());
+                      }}
+                      className="rounded px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                    >
+                      Keep {labelB}
+                    </button>
+                    <button
+                      onClick={() => {
+                        onDuplicateRemove(d.bIndex);
+                        setDismissed(new Set());
+                      }}
+                      className="rounded px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                    >
+                      Keep {labelA}
+                    </button>
                     {sameHeader && nextA && (
                       <button
                         onClick={() => {
                           onDuplicateRename(d.bIndex, nextA);
                           setDismissed((prev) => new Set(prev).add(key));
                         }}
-                        className="rounded px-1.5 py-0.5 text-amber-700 transition-colors hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                        className="rounded px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30"
                       >
-                        Rename &rarr; {nextA}
+                        Rename {labelB} &rarr; {nextA}
                       </button>
                     )}
-                    <button
-                      onClick={() => {
-                        onDuplicateRemove(d.bIndex);
-                        setDismissed(new Set());
-                      }}
-                      className="rounded px-1.5 py-0.5 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
-                    >
-                      Remove {d.bHeader || `Slide ${d.bIndex + 1}`}
-                    </button>
+                    <span className="flex-1" />
                     <button
                       onClick={() => setDismissed((prev) => new Set(prev).add(key))}
-                      className="rounded px-1.5 py-0.5 text-muted-foreground transition-colors hover:bg-muted"
+                      className="rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
                     >
                       Keep Both
                     </button>
-                  </span>
+                  </div>
                 </div>
               );
             })}
