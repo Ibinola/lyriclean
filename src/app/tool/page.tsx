@@ -11,8 +11,10 @@ import SettingsPanel from "@/components/SettingsPanel";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
 import { preprocessWhatsApp } from "@/lib/preprocessWhatsApp";
 import { isMeaningfulPaste } from "@/lib/pasteHeuristics";
+import { decideAutoCopyOutcome } from "@/lib/autoCopyDecision";
 import { expandReferences } from "@/lib/expandSections";
 import { detectDuplicates, type DuplicateGroup } from "@/lib/detectDuplicates";
+import { copyToClipboard } from "@/lib/clipboard";
 import { useToast } from "@/components/Toaster";
 import { exportEasyWorship, exportProPresenter, exportPowerPoint } from "@/lib/export";
 import { useHistory, type Snapshot } from "@/lib/history";
@@ -122,22 +124,32 @@ export default function Home() {
   // been committed to state yet - see handleInputChange's auto-clean path,
   // where this matters. Both the manual Clean button and paste auto-clean
   // call this exact function; there is no second copy of this sequence.
+  //
+  // The return value includes the freshly-computed `duplicates` and
+  // `displayed` (slide-formatted) text alongside cleanLyrics's own result -
+  // not just what gets written to state - for the same reason `input` is a
+  // plain argument rather than a state read: a caller acting immediately
+  // after this call (auto-copy's duplicate/empty gate, its choice of what
+  // text to copy) must not depend on `duplicates`/`displayedLyrics` state
+  // having re-rendered yet.
   const runCleaningPipeline = useCallback(
     (input: string) => {
       const whatsappNormalized = preprocessWhatsApp(input);
       const expanded = expandReferences(whatsappNormalized);
       const result = cleanLyrics(expanded, cleaningOptions);
+      const foundDuplicates = detectDuplicates(result.text);
+      const displayed = applyLineBreaks(result.text, linesPerBreak);
 
       baseTextRef.current = result.text;
       setCleanedLyrics(result.text);
       setFoundSections(result.sections);
-      setDuplicates(detectDuplicates(result.text));
-      applyFormatting(result.text);
+      setDuplicates(foundDuplicates);
+      setDisplayedLyrics(displayed);
       setLastReport(result.report);
 
-      return result;
+      return { ...result, duplicates: foundDuplicates, displayed };
     },
-    [cleaningOptions, applyFormatting],
+    [cleaningOptions, linesPerBreak],
   );
 
   const handleClean = useCallback(() => {
@@ -209,12 +221,8 @@ export default function Home() {
 
   const handleCopy = useCallback(async () => {
     if (!displayedLyrics) return;
-    try {
-      await navigator.clipboard.writeText(displayedLyrics);
-      toast("Copied to clipboard", "success");
-    } catch {
-      toast("Failed to copy", "error");
-    }
+    const copied = await copyToClipboard(displayedLyrics);
+    toast(copied ? "Copied to clipboard" : "Failed to copy", copied ? "success" : "error");
   }, [displayedLyrics, toast]);
 
   const handleReplace = (find: string, replace: string) => {
@@ -365,24 +373,49 @@ export default function Home() {
   // in the onChange that always follows it for the same paste action.
   const pendingAutoCleanRef = useRef(false);
 
+  // Auto-clean's follow-up: after a qualifying paste, run the pipeline and -
+  // only when the result is trustworthy enough to hand straight to
+  // EasyWorship - copy it automatically. Exactly one toast is shown per
+  // paste, chosen from the single outcome that actually happened; there is
+  // never a "Cleaned automatically" toast followed by a separate "Copied!"
+  // one. Manual Clean (handleClean) and normal typing never call this path,
+  // so they can never trigger auto-copy - the only route to
+  // copyToClipboard here is a paste that set pendingAutoCleanRef.
   const handleInputChange = useCallback(
-    (val: string) => {
+    async (val: string) => {
       setRawLyrics(val);
 
-      if (pendingAutoCleanRef.current) {
-        pendingAutoCleanRef.current = false;
-        if (val.trim()) {
-          setCleaning(true);
-          const result = runCleaningPipeline(val);
-          setCleaning(false);
-          toast(
-            result.text.trim()
-              ? `Cleaned automatically — ${result.sections.length} sections`
-              : "Pasted text had nothing left after cleaning",
-            result.text.trim() ? "success" : "info",
-          );
-        }
+      if (!pendingAutoCleanRef.current) return;
+      pendingAutoCleanRef.current = false;
+      if (!val.trim()) return;
+
+      setCleaning(true);
+      let result: ReturnType<typeof runCleaningPipeline>;
+      try {
+        result = runCleaningPipeline(val);
+      } catch (err) {
+        setCleaning(false);
+        console.error("Auto-clean failed:", err);
+        toast("Auto-clean failed — click Clean to try again", "error");
+        return;
       }
+      setCleaning(false);
+
+      const outcome = decideAutoCopyOutcome(result);
+      if (outcome === "empty") {
+        toast("Pasted text had nothing left after cleaning", "info");
+        return;
+      }
+      if (outcome === "needs-review") {
+        toast("Cleaned — review duplicates before copying", "info");
+        return;
+      }
+
+      const copied = await copyToClipboard(result.displayed);
+      toast(
+        copied ? "Cleaned & copied — ready for EasyWorship" : "Cleaned — click Copy to copy",
+        copied ? "success" : "info",
+      );
     },
     [runCleaningPipeline, toast],
   );

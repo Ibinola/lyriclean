@@ -13,6 +13,7 @@ import { preprocessWhatsApp } from "./preprocessWhatsApp";
 import { expandReferences } from "./expandSections";
 import { cleanLyrics, applyLineBreaks } from "./clean";
 import { detectDuplicates } from "./detectDuplicates";
+import { decideAutoCopyOutcome } from "./autoCopyDecision";
 import type { CleaningOptions } from "./cleaningOptions";
 
 function runPipeline(input: string, options?: Partial<CleaningOptions>, linesPerBreak = 0) {
@@ -131,5 +132,59 @@ Repeat Chorus x2`;
     expect(result.text).not.toMatch(/\[Instrumental\]/i);
     expect(result.text).not.toContain("BGV");
     expect(result.text).not.toContain("Repeat Chorus");
+  });
+});
+
+describe("composed pipeline: the text that gets auto-copied", () => {
+  // Task 6's auto-copy uses `displayed` (the slide-formatted text, after
+  // applyLineBreaks), matching what the manual Copy button has always
+  // copied — never the canonical `text`, and never the raw input.
+
+  it("differs from the canonical cleaned text once slides are split", () => {
+    const input = "Line one\nLine two\nLine three\nLine four";
+    const result = runPipeline(input, {}, 2);
+    expect(result.displayed).not.toBe(result.text);
+    expect(result.displayed).toBe("Line one\nLine two\n\nLine three\nLine four");
+  });
+
+  it("matches the canonical cleaned text when lines-per-slide is 0", () => {
+    const input = "Line one\nLine two\nLine three\nLine four";
+    const result = runPipeline(input, {}, 0);
+    expect(result.displayed).toBe(result.text);
+  });
+
+  it("never equals the raw WhatsApp source text", () => {
+    const input = "*Verse 1*\nAmazing grace\nHow sweet the sound";
+    const result = runPipeline(input, {}, 2);
+    expect(result.displayed).not.toBe(input);
+    expect(result.displayed).not.toContain("*");
+  });
+});
+
+describe("composed pipeline -> auto-copy decision integration", () => {
+  it("is ready to copy for a clean multi-section song with no duplicates", () => {
+    const input = "*Verse 1*\nAmazing grace\n\n*Chorus*\nMy chains are gone";
+    const result = runPipeline(input);
+    expect(decideAutoCopyOutcome(result)).toBe("ready");
+  });
+
+  it("requires review when the cleaned result contains duplicate sections", () => {
+    const input = `Chorus
+My chains are gone
+I've been set free
+
+Chorus
+My chains are gone
+I've been set free`;
+    const result = runPipeline(input);
+    expect(result.duplicates.length).toBeGreaterThan(0);
+    expect(decideAutoCopyOutcome(result)).toBe("needs-review");
+  });
+
+  it("is empty when nothing survives cleaning", () => {
+    const input = "Repeat x2\n[Instrumental]";
+    const result = runPipeline(input);
+    expect(result.text.trim()).toBe("");
+    expect(decideAutoCopyOutcome(result)).toBe("empty");
   });
 });
