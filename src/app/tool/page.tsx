@@ -9,6 +9,7 @@ import Changelog from "@/components/Changelog";
 import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import SettingsPanel from "@/components/SettingsPanel";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
+import { preprocessWhatsApp } from "@/lib/preprocessWhatsApp";
 import { expandReferences } from "@/lib/expandSections";
 import { detectDuplicates, type DuplicateGroup } from "@/lib/detectDuplicates";
 import { useToast } from "@/components/Toaster";
@@ -118,7 +119,8 @@ export default function Home() {
     setCleaning(true);
     setLastReport(null);
 
-    const expanded = expandReferences(rawLyrics);
+    const whatsappNormalized = preprocessWhatsApp(rawLyrics);
+    const expanded = expandReferences(whatsappNormalized);
     const result = cleanLyrics(expanded, cleaningOptions);
 
     baseTextRef.current = result.text;
