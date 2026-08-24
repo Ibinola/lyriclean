@@ -19,6 +19,7 @@ interface LyricEditorProps {
   onLyricsFound: (lyrics: string, title: string, artist: string) => void;
   onDuplicateRemove: (paraIndex: number) => void;
   onDuplicateRename: (paraIndex: number, newHeader: string) => void;
+  onClear: () => void;
   onPaste?: (e: React.ClipboardEvent) => void;
   onTranscribeLine?: (line: string) => void;
   onIdentified?: (title: string, artist: string) => void;
@@ -43,6 +44,7 @@ export default function LyricEditor({
   onLyricsFound,
   onDuplicateRemove,
   onDuplicateRename,
+  onClear,
   onPaste,
   onTranscribeLine,
   onIdentified,
@@ -137,7 +139,7 @@ export default function LyricEditor({
             </button>
             <button
               onClick={() => {
-                onInputChange("");
+                onClear();
                 setShowEmpty(true);
               }}
               className="rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

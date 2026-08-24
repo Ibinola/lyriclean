@@ -13,6 +13,33 @@ export interface Snapshot {
 const MAX_HISTORY = 50;
 const AUTOSAVE_KEY = "lyriclean:autosave";
 
+/**
+ * Plain (non-hook) localStorage access, extracted so the persistence
+ * behavior itself — not just the hook wrapping it — can be unit tested
+ * without a component renderer.
+ */
+export function saveAutosave(s: Snapshot): void {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(s));
+  } catch {}
+}
+
+export function loadAutosave(): Snapshot | null {
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as Snapshot;
+  } catch {
+    return null;
+  }
+}
+
+export function clearAutosave(): void {
+  try {
+    localStorage.removeItem(AUTOSAVE_KEY);
+  } catch {}
+}
+
 interface UseHistoryReturn {
   push: (s: Snapshot) => void;
   undo: () => Snapshot | null;
@@ -55,27 +82,9 @@ export function useHistory(): UseHistoryReturn {
   const canUndo = snapshots.length > 0 && indexRef.current > 0;
   const canRedo = snapshots.length > 0 && indexRef.current < snapshots.length - 1;
 
-  const saveToDisk = useCallback((s: Snapshot) => {
-    try {
-      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(s));
-    } catch {}
-  }, []);
-
-  const loadFromDisk = useCallback((): Snapshot | null => {
-    try {
-      const raw = localStorage.getItem(AUTOSAVE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as Snapshot;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const clearDisk = useCallback(() => {
-    try {
-      localStorage.removeItem(AUTOSAVE_KEY);
-    } catch {}
-  }, []);
+  const saveToDisk = useCallback((s: Snapshot) => saveAutosave(s), []);
+  const loadFromDisk = useCallback((): Snapshot | null => loadAutosave(), []);
+  const clearDisk = useCallback(() => clearAutosave(), []);
 
   return {
     push,

@@ -54,9 +54,14 @@ export default function Home() {
     }
   }, [history]);
 
-  // Auto-save on state change
+  // Auto-save on state change. When both sides are empty there is nothing
+  // to persist — actively clear any stale snapshot instead of leaving it on
+  // disk, so autosave never resurrects lyrics the user explicitly cleared.
   useEffect(() => {
-    if (!rawLyrics && !cleanedLyrics) return;
+    if (!rawLyrics && !cleanedLyrics) {
+      history.clearDisk();
+      return;
+    }
     const timer = setTimeout(() => {
       history.saveToDisk({
         rawLyrics,
@@ -164,6 +169,24 @@ export default function Home() {
     baseTextRef.current = "";
     setLastReport(null);
   }, [pushSnapshot]);
+
+  // Fully clears the current song's working state (raw input, cleaned
+  // output, and every piece of state derived from it) and immediately
+  // invalidates the persisted autosave, so a reload right after Clear can't
+  // resurrect it. Does not touch unrelated preferences (dark mode, tour
+  // completion, cleaning rules, lines-per-slide) — those live under their
+  // own localStorage keys and are untouched by clearDisk().
+  const handleClear = useCallback(() => {
+    pushSnapshot();
+    setRawLyrics("");
+    setCleanedLyrics("");
+    setDisplayedLyrics("");
+    setFoundSections([]);
+    setDuplicates([]);
+    baseTextRef.current = "";
+    setLastReport(null);
+    history.clearDisk();
+  }, [pushSnapshot, history]);
 
   const handleCopy = useCallback(async () => {
     if (!displayedLyrics) return;
@@ -437,6 +460,7 @@ export default function Home() {
           onLyricsFound={handleLyricsFound}
           onDuplicateRemove={handleDuplicateRemove}
           onDuplicateRename={handleDuplicateRename}
+          onClear={handleClear}
           onPaste={handlePaste}
           onTranscribeLine={handleTranscribeLine}
           onIdentified={handleIdentified}
