@@ -48,6 +48,52 @@ function removeEmoji(str: string): string {
     .trim();
 }
 
+export interface CueMatch {
+  /** null = a bare cue with no content to preserve (e.g. "Lead" alone) */
+  remainder: string | null;
+}
+
+function matchCue(trimmed: string, words: string[]): CueMatch | null {
+  const group = words.join("|");
+  const bare = new RegExp(`^(?:${group})\\s*:?\\s*$`, "i");
+  if (bare.test(trimmed)) return { remainder: null };
+
+  const prefixed = new RegExp(`^(?:${group})\\s*:\\s*(.+)$`, "i");
+  const match = trimmed.match(prefixed);
+  if (match) return { remainder: match[1].trim() };
+
+  return null;
+}
+
+const leaderCueWords = ["lead", "leader", "pastor"];
+const bgvCueWords = ["bgv", "choir", "backup", "background"];
+
+// Bare or bracket/paren-wrapped instrumental marker, with an optional number
+// (e.g. "Instrumental 2") or trailing x-count (e.g. "[Instrumental x2]").
+const instrumentalPattern =
+  /^[\[\(]?\s*instrumentals?\s*\d*\s*(?:x\s*\d+)?\s*[\]\)]?\s*:?\s*$/i;
+
+/**
+ * Matches a leader/director cue line ("Lead:", "Leader:", "Pastor:", or the
+ * bare word alone). A colon is REQUIRED before any trailing content so a
+ * real lyric line like "Lead me to the cross" is never touched.
+ */
+function matchLeaderCue(trimmed: string): CueMatch | null {
+  return matchCue(trimmed, leaderCueWords);
+}
+
+/**
+ * Matches a BGV/choir cue line ("BGV:", "Choir:", "Backup:", "Background:",
+ * or the bare word alone). Same colon requirement as matchLeaderCue.
+ */
+function matchBGVCue(trimmed: string): CueMatch | null {
+  return matchCue(trimmed, bgvCueWords);
+}
+
+function isInstrumentalMarker(trimmed: string): boolean {
+  return instrumentalPattern.test(trimmed);
+}
+
 function isFillerLine(trimmed: string): boolean {
   const lower = trimmed.toLowerCase();
   if (
@@ -73,4 +119,4 @@ function isFillerLine(trimmed: string): boolean {
   return instructionCount / nonNoise.length >= 0.8;
 }
 
-export { removeEmoji, isFillerLine };
+export { removeEmoji, isFillerLine, matchLeaderCue, matchBGVCue, isInstrumentalMarker };

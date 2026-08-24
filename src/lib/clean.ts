@@ -1,4 +1,10 @@
-import { removeEmoji, isFillerLine } from "./fillerDetection";
+import {
+  removeEmoji,
+  isFillerLine,
+  matchLeaderCue,
+  matchBGVCue,
+  isInstrumentalMarker,
+} from "./fillerDetection";
 import { matchesSectionLabel, normalizeSectionLabel, extractBracketedLabel } from "./sectionLabels";
 import { spellcheck } from "./spellcheck";
 import type { CleaningOptions, CleaningReport } from "./cleaningOptions";
@@ -68,6 +74,49 @@ export function cleanLyrics(raw: string, options?: Partial<CleaningOptions>): Cl
     }
 
     let trimmed = cleaned.trim();
+
+    // Instrumental section markers ([Instrumental], Instrumental 2, ...).
+    // Runs before the generic filler check so the dedicated toggle always
+    // wins, in both directions, over the ratio-based heuristic below.
+    if (isInstrumentalMarker(trimmed)) {
+      if (opts.removeInstrumentalSections) {
+        report.fillerLinesRemoved++;
+        continue;
+      }
+      result.push(trimmed);
+      continue;
+    }
+
+    // Leader/director cues (Lead:, Leader:, Pastor:). A colon-prefixed cue
+    // has its label stripped but keeps any real content that follows it
+    // (e.g. "Lead: Amazing grace" -> "Amazing grace"); a bare cue has none.
+    const leaderCue = matchLeaderCue(trimmed);
+    if (leaderCue) {
+      if (!opts.removeLeaderCues) {
+        result.push(trimmed);
+        continue;
+      }
+      if (!leaderCue.remainder) {
+        report.fillerLinesRemoved++;
+        continue;
+      }
+      trimmed = leaderCue.remainder;
+    }
+
+    // BGV/choir cues (BGV:, Choir:, Backup:, Background:) - same shape as
+    // the leader-cue handling above.
+    const bgvCue = matchBGVCue(trimmed);
+    if (bgvCue) {
+      if (!opts.removeBGV) {
+        result.push(trimmed);
+        continue;
+      }
+      if (!bgvCue.remainder) {
+        report.fillerLinesRemoved++;
+        continue;
+      }
+      trimmed = bgvCue.remainder;
+    }
 
     // Filter lines
     if (opts.removeFillerLines && isFillerLine(trimmed)) {

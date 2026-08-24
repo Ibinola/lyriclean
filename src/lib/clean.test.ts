@@ -166,6 +166,95 @@ describe("cleanLyrics", () => {
   });
 });
 
+describe("removeLeaderCues toggle", () => {
+  it("strips leader cue labels but keeps the real content when enabled (default)", () => {
+    const input = "Lead: Amazing grace\nLeader: Sing it again\nHow sweet the sound";
+    const result = cleanLyrics(input);
+    expect(result.text).not.toContain("Lead:");
+    expect(result.text).not.toContain("Leader:");
+    expect(result.text).toContain("Amazing grace");
+    expect(result.text).toContain("Sing it again");
+  });
+
+  it("removes a bare leader cue with no content when enabled (default)", () => {
+    const input = "Amazing grace\nLead\nHow sweet";
+    const result = cleanLyrics(input);
+    expect(result.text).not.toContain("Lead");
+  });
+
+  it("preserves leader cue lines untouched when disabled", () => {
+    const input = "Lead: Amazing grace\nLeader: Sing it again\nHow sweet the sound";
+    const result = cleanLyrics(input, { removeLeaderCues: false });
+    expect(result.text).toContain("Lead: Amazing grace");
+    expect(result.text).toContain("Leader: Sing it again");
+  });
+
+  it("preserves a bare leader cue when disabled, even though it also has a high filler-word ratio", () => {
+    const input = "Amazing grace\nLead\nHow sweet";
+    const result = cleanLyrics(input, { removeLeaderCues: false });
+    expect(result.text).toContain("Lead");
+  });
+
+  it("does not touch a real lyric line that happens to start with 'Lead'", () => {
+    const input = "Lead me to the cross\nHow sweet the sound";
+    const result = cleanLyrics(input);
+    expect(result.text).toContain("Lead me to the cross");
+  });
+});
+
+describe("removeBGV toggle", () => {
+  it("strips BGV/choir cue labels when enabled (default)", () => {
+    const input = "BGV: harmony\nChoir: repeat\nHow sweet the sound";
+    const result = cleanLyrics(input);
+    expect(result.text).not.toContain("BGV");
+    expect(result.text).not.toContain("Choir");
+    expect(result.text).toContain("How sweet the sound");
+  });
+
+  it("removes a bare BGV/Choir cue with no content when enabled (default)", () => {
+    const input = "Amazing grace\nBGV\nChoir\nHow sweet";
+    const result = cleanLyrics(input);
+    expect(result.text).not.toContain("BGV");
+    expect(result.text).not.toContain("Choir");
+  });
+
+  it("preserves BGV/choir cue lines untouched when disabled", () => {
+    const input = "BGV: harmony\nChoir: repeat\nHow sweet the sound";
+    const result = cleanLyrics(input, { removeBGV: false });
+    expect(result.text).toContain("BGV: harmony");
+    expect(result.text).toContain("Choir: repeat");
+  });
+
+  it("preserves a bare BGV cue when disabled", () => {
+    const input = "Amazing grace\nBGV\nHow sweet";
+    const result = cleanLyrics(input, { removeBGV: false });
+    expect(result.text).toContain("BGV");
+  });
+});
+
+describe("removeInstrumentalSections toggle", () => {
+  it("removes bracketed and bare instrumental markers when enabled (default)", () => {
+    const input = "Amazing grace\n[Instrumental]\nInstrumental\nHow sweet the sound";
+    const result = cleanLyrics(input);
+    expect(result.text).not.toMatch(/instrumental/i);
+    expect(result.text).toContain("Amazing grace");
+    expect(result.text).toContain("How sweet the sound");
+  });
+
+  it("preserves bracketed and bare instrumental markers untouched when disabled", () => {
+    const input = "Amazing grace\n[Instrumental]\nInstrumental\nHow sweet the sound";
+    const result = cleanLyrics(input, { removeInstrumentalSections: false });
+    expect(result.text).toContain("[Instrumental]");
+    expect(result.text).toMatch(/(^|\n)Instrumental(\n|$)/);
+  });
+
+  it("does not affect an unrelated bracketed stage direction", () => {
+    const input = "Amazing grace\n[instrument only]\nHow sweet";
+    const result = cleanLyrics(input, { removeInstrumentalSections: false });
+    expect(result.text).not.toContain("instrument only");
+  });
+});
+
 describe("applyLineBreaks", () => {
   it("returns empty for empty input", () => {
     expect(applyLineBreaks("", 2)).toBe("");
