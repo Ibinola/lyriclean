@@ -10,6 +10,7 @@ import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import SettingsPanel from "@/components/SettingsPanel";
 import { cleanLyrics, applyLineBreaks } from "@/lib/clean";
 import { preprocessWhatsApp } from "@/lib/preprocessWhatsApp";
+import { isMeaningfulPaste } from "@/lib/pasteHeuristics";
 import { expandReferences } from "@/lib/expandSections";
 import { detectDuplicates, type DuplicateGroup } from "@/lib/detectDuplicates";
 import { useToast } from "@/components/Toaster";
@@ -114,21 +115,37 @@ export default function Home() {
     [pushSnapshot, applyFormatting],
   );
 
+  // The single authoritative cleaning pipeline: WhatsApp normalization ->
+  // reference expansion -> cleanLyrics -> duplicate detection -> slide
+  // formatting -> report. Takes the raw text as a plain argument (never
+  // reads `rawLyrics` state) so it is safe to call with a value that hasn't
+  // been committed to state yet - see handleInputChange's auto-clean path,
+  // where this matters. Both the manual Clean button and paste auto-clean
+  // call this exact function; there is no second copy of this sequence.
+  const runCleaningPipeline = useCallback(
+    (input: string) => {
+      const whatsappNormalized = preprocessWhatsApp(input);
+      const expanded = expandReferences(whatsappNormalized);
+      const result = cleanLyrics(expanded, cleaningOptions);
+
+      baseTextRef.current = result.text;
+      setCleanedLyrics(result.text);
+      setFoundSections(result.sections);
+      setDuplicates(detectDuplicates(result.text));
+      applyFormatting(result.text);
+      setLastReport(result.report);
+
+      return result;
+    },
+    [cleaningOptions, applyFormatting],
+  );
+
   const handleClean = useCallback(() => {
     if (!rawLyrics.trim()) return;
     setCleaning(true);
     setLastReport(null);
 
-    const whatsappNormalized = preprocessWhatsApp(rawLyrics);
-    const expanded = expandReferences(whatsappNormalized);
-    const result = cleanLyrics(expanded, cleaningOptions);
-
-    baseTextRef.current = result.text;
-    setCleanedLyrics(result.text);
-    setFoundSections(result.sections);
-    setDuplicates(detectDuplicates(result.text));
-    applyFormatting(result.text);
-    setLastReport(result.report);
+    const result = runCleaningPipeline(rawLyrics);
     setCleaning(false);
 
     if (!result.text.trim()) {
@@ -136,7 +153,7 @@ export default function Home() {
     } else {
       toast(`Cleaned to ${result.sections.length} sections`, "success");
     }
-  }, [rawLyrics, cleaningOptions, applyFormatting, toast]);
+  }, [rawLyrics, runCleaningPipeline, toast]);
 
   const handleUndo = useCallback(() => {
     const snap = history.undo();
@@ -340,9 +357,35 @@ export default function Home() {
     [cleaningOptions, pushSnapshot, applyFormatting, toast],
   );
 
-  const handleInputChange = (val: string) => {
-    setRawLyrics(val);
-  };
+  // Bridges the paste event (which only sees the pasted clipboard fragment)
+  // to the very next onChange (which reports the textarea's true merged
+  // value once the browser has inserted the fragment). A ref is used
+  // instead of state so there is no re-render/timing dependency: it is
+  // written synchronously in handlePaste and read-and-cleared synchronously
+  // in the onChange that always follows it for the same paste action.
+  const pendingAutoCleanRef = useRef(false);
+
+  const handleInputChange = useCallback(
+    (val: string) => {
+      setRawLyrics(val);
+
+      if (pendingAutoCleanRef.current) {
+        pendingAutoCleanRef.current = false;
+        if (val.trim()) {
+          setCleaning(true);
+          const result = runCleaningPipeline(val);
+          setCleaning(false);
+          toast(
+            result.text.trim()
+              ? `Cleaned automatically — ${result.sections.length} sections`
+              : "Pasted text had nothing left after cleaning",
+            result.text.trim() ? "success" : "info",
+          );
+        }
+      }
+    },
+    [runCleaningPipeline, toast],
+  );
 
   const handleTranscribeLine = useCallback((line: string) => {
     setRawLyrics((prev) => (prev ? prev.replace(/\s+$/, "") + "\n" + line : line));
@@ -374,18 +417,21 @@ export default function Home() {
     setCleaningOptions(options);
   }, []);
 
-  // Auto-paste detection
-  const handlePaste = useCallback(
-    (e: React.ClipboardEvent) => {
-      const pasted = e.clipboardData.getData("text");
-      if (pasted.length > 20) {
-        setTimeout(() => {
-          if (rawLyrics !== pasted) setRawLyrics(pasted);
-        }, 0);
-      }
-    },
-    [rawLyrics],
-  );
+  // Flags a qualifying paste for handleInputChange's very next call (see
+  // pendingAutoCleanRef above). Reads only the clipboard fragment itself,
+  // never the textarea's current/merged value, so pasting a small edit into
+  // an already-long song is correctly judged on the small fragment, not the
+  // long total. Also clears the flag on a short delay as a safety net, in
+  // case a paste event somehow doesn't produce a following change event.
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const pasted = e.clipboardData.getData("text");
+    pendingAutoCleanRef.current = isMeaningfulPaste(pasted);
+    if (pendingAutoCleanRef.current) {
+      setTimeout(() => {
+        pendingAutoCleanRef.current = false;
+      }, 0);
+    }
+  }, []);
 
   // Stale-safe refs for keyboard handler
   const handleCleanRef = useRef(handleClean);
