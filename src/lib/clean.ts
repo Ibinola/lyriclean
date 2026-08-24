@@ -4,6 +4,7 @@ import {
   matchLeaderCue,
   matchBGVCue,
   isInstrumentalMarker,
+  matchRepeatDirective,
 } from "./fillerDetection";
 import { matchesSectionLabel, normalizeSectionLabel, extractBracketedLabel } from "./sectionLabels";
 import { spellcheck } from "./spellcheck";
@@ -116,6 +117,21 @@ export function cleanLyrics(raw: string, options?: Partial<CleaningOptions>): Cl
         continue;
       }
       trimmed = bgvCue.remainder;
+    }
+
+    // Whole-line "repeat this section" directives (Repeat Chorus x2,
+    // Verse 2 x3, Repeat Refrain, ...). Detected independent of any option
+    // so a disabled removeRepeatMarkers can fully preserve the line and
+    // bypass the generic filler check below - some of these (e.g. "Repeat
+    // Refrain") would otherwise be silently deleted by that heuristic
+    // regardless of this toggle, since both words are instruction words.
+    if (matchRepeatDirective(trimmed)) {
+      if (!opts.removeRepeatMarkers) {
+        result.push(trimmed);
+        continue;
+      }
+      report.repeatMarkersStripped++;
+      continue;
     }
 
     // Filter lines

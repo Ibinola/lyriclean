@@ -288,3 +288,97 @@ describe("applyLineBreaks", () => {
     expect(result).toBe("Verse 1\nLine A\nLine B\n\nLine C\nLine D\n\nLine E");
   });
 });
+
+describe("repeat section directives (removeRepeatMarkers)", () => {
+  const directives = [
+    "Repeat Chorus",
+    "Repeat Chorus x2",
+    "Repeat Chorus 2x",
+    "Repeat Verse 1",
+    "Verse 1 x2",
+    "Chorus x3",
+    "Repeat Bridge",
+    "Repeat Refrain",
+    "Repeat Tag x2",
+  ];
+
+  it.each(directives)("removes %s entirely when enabled (default)", (line) => {
+    const result = cleanLyrics(`Amazing grace\n${line}\nHow sweet the sound`);
+    expect(result.text).toBe("Amazing grace\nHow sweet the sound");
+  });
+
+  it("removes directives that lose their embedded section number during count-stripping, but still correctly identifies them", () => {
+    // "Verse 2 x3" / "Repeat Verse 1 x2" internally fold the section's own
+    // number into the stripped count (see matchRepeatDirective's doc
+    // comment) - confirming the end-to-end removal still succeeds despite
+    // that, since only the boolean match matters for removal.
+    for (const line of ["Verse 2 x3", "Repeat Verse 1 x2"]) {
+      const result = cleanLyrics(`Amazing grace\n${line}\nHow sweet the sound`);
+      expect(result.text).toBe("Amazing grace\nHow sweet the sound");
+    }
+  });
+
+  it.each(directives)("preserves %s completely unchanged when disabled", (line) => {
+    const result = cleanLyrics(`Amazing grace\n${line}\nHow sweet the sound`, {
+      removeRepeatMarkers: false,
+    });
+    expect(result.text).toBe(`Amazing grace\n${line}\nHow sweet the sound`);
+  });
+
+  it("does not let the generic filler heuristic override a disabled toggle (Repeat Refrain)", () => {
+    // Both "repeat" and "refrain" are instruction words, so this line would
+    // otherwise be deleted by isFillerLine's ratio check regardless of
+    // removeRepeatMarkers - the explicit bypass in clean.ts must prevent that.
+    const result = cleanLyrics("Amazing grace\nRepeat Refrain\nHow sweet the sound", {
+      removeRepeatMarkers: false,
+    });
+    expect(result.text).toBe("Amazing grace\nRepeat Refrain\nHow sweet the sound");
+  });
+
+  it.each([
+    "We repeat Your name",
+    "I will repeat the sound of praise",
+    "Sing it again",
+    "Again and again",
+    "Your love repeats through generations",
+  ])("does not remove the real lyric line %s", (line) => {
+    const result = cleanLyrics(`Amazing grace\n${line}\nHow sweet the sound`);
+    expect(result.text).toContain(line);
+  });
+
+  it("does not change already-correct bare-count behavior", () => {
+    // No section label is referenced, so these are unaffected by this
+    // feature and continue to behave exactly as before.
+    expect(cleanLyrics("Amazing grace\nx2\nHow sweet").text).toBe("Amazing grace\nHow sweet");
+    expect(cleanLyrics("Amazing grace\n2x\nHow sweet").text).toBe("Amazing grace\nHow sweet");
+    expect(cleanLyrics("Amazing grace\nRepeat x2\nHow sweet").text).toBe(
+      "Amazing grace\nHow sweet",
+    );
+    expect(cleanLyrics("Amazing grace\n(x2)\nHow sweet").text).toBe("Amazing grace\nHow sweet");
+    expect(cleanLyrics("Amazing grace\n[x2]\nHow sweet").text).toBe("Amazing grace\nHow sweet");
+    // Not section-referencing, so left untouched, same as before this task.
+    expect(cleanLyrics("Amazing grace\nRepeat 3 times\nHow sweet").text).toBe(
+      "Amazing grace\nRepeat 3 times\nHow sweet",
+    );
+  });
+
+  it("does not regress existing trailing-annotation repeat-marker stripping", () => {
+    const result = cleanLyrics("Shout to the Lord 4x BGV");
+    expect(result.text).toBe("Shout to the Lord");
+  });
+
+  it("does not regress Task 1's leader/BGV/instrumental toggles", () => {
+    const input = "Lead: Amazing grace\nBGV: harmony\n[Instrumental]\nHow sweet the sound";
+    const enabled = cleanLyrics(input);
+    expect(enabled.text).toBe("Amazing grace\nHow sweet the sound");
+
+    const disabled = cleanLyrics(input, {
+      removeLeaderCues: false,
+      removeBGV: false,
+      removeInstrumentalSections: false,
+    });
+    expect(disabled.text).toContain("Lead: Amazing grace");
+    expect(disabled.text).toContain("BGV: harmony");
+    expect(disabled.text).toMatch(/instrumental/i);
+  });
+});

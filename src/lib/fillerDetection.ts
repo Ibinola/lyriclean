@@ -1,3 +1,5 @@
+import { matchesSectionLabel } from "./sectionLabels";
+
 const instructionWords = new Set([
   "repeat",
   "refrain",
@@ -94,6 +96,50 @@ function isInstrumentalMarker(trimmed: string): boolean {
   return instrumentalPattern.test(trimmed);
 }
 
+// A trailing numeric count suffix, same shape as the count-detection already
+// used by the general repeat-marker stripping in clean.ts (x2, 2x, x 8, ...).
+const trailingCountPattern = /^(.*?)\s*[\[\(]?\s*(?:\d+\s*x\s*\d*|\bx\s*\d+)\s*[\]\)]?$/i;
+
+function splitTrailingCount(trimmed: string): { rest: string; hadCount: boolean } {
+  const match = trimmed.match(trailingCountPattern);
+  if (match && match[1].trim()) {
+    return { rest: match[1].trim(), hadCount: true };
+  }
+  return { rest: trimmed, hadCount: false };
+}
+
+/**
+ * Matches a "repeat this section" directive line — a line that is
+ * structurally just an instruction to repeat a recognized song section, not
+ * lyric content that merely contains the word "repeat":
+ *
+ *   "Repeat <SectionLabel>"     (count optional, e.g. "Repeat Chorus x2")
+ *   "<SectionLabel> x2"          (count REQUIRED — without it, this is just
+ *                                 a normal section header, already handled
+ *                                 by the existing section-detection logic)
+ *
+ * The referenced label is verified against the canonical section-label
+ * matcher (sectionLabels.ts), so this can never fire on free-form text that
+ * happens to contain "repeat" — e.g. "We repeat Your name" does not start
+ * with the word "repeat", so it is never even considered.
+ *
+ * Note: splitTrailingCount can, for a label that itself carries a number
+ * (e.g. "Verse 2 x3"), fold that number into the stripped count rather than
+ * the label ("rest" ends up as "Verse", not "Verse 2"). That's harmless
+ * here — this function only returns a boolean, it never reconstructs text —
+ * but is not something to build on if this logic is ever reused elsewhere.
+ */
+function matchRepeatDirective(trimmed: string): boolean {
+  const { rest, hadCount } = splitTrailingCount(trimmed);
+
+  const repeatMatch = rest.match(/^repeat\s+(.+)$/i);
+  if (repeatMatch) {
+    return matchesSectionLabel(repeatMatch[1].trim());
+  }
+
+  return hadCount && matchesSectionLabel(rest);
+}
+
 function isFillerLine(trimmed: string): boolean {
   const lower = trimmed.toLowerCase();
   if (
@@ -119,4 +165,11 @@ function isFillerLine(trimmed: string): boolean {
   return instructionCount / nonNoise.length >= 0.8;
 }
 
-export { removeEmoji, isFillerLine, matchLeaderCue, matchBGVCue, isInstrumentalMarker };
+export {
+  removeEmoji,
+  isFillerLine,
+  matchLeaderCue,
+  matchBGVCue,
+  isInstrumentalMarker,
+  matchRepeatDirective,
+};
